@@ -1,0 +1,24 @@
+/* Expenses screen specific styles */
+
+/* Hide the built-in placeholder text when empty (Chromium/WebKit) */
+#fromDate:not(.has-value)::-webkit-datetime-edit,
+#toDate:not(.has-value)::-webkit-datetime-edit { 
+    color: transparent; 
+}
+
+#fromDate:not(.has-value):focus::-webkit-datetime-edit,
+#toDate:not(.has-value):focus::-webkit-datetime-edit { 
+    color: inherit; 
+}
+
+/* Firefox support */
+@-moz-document url-prefix() {
+    #fromDate:not(.has-value),
+    #toDate:not(.has-value) { 
+        color: transparent; 
+    }
+    #fromDate:not(.has-value):focus,
+    #toDate:not(.has-value):focus { 
+        color: inherit; 
+    }
+}

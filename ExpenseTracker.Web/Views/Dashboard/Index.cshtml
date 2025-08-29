@@ -1,0 +1,88 @@
+@model ExpenseTracker.Web.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted">Total Today</div>
+                <div class="h4">@Model.TotalToday.ToString("C2")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted">Total This Month</div>
+                <div class="h4">@Model.TotalThisMonth.ToString("C2")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted">Total This Year</div>
+                <div class="h4">@Model.TotalThisYear.ToString("C2")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Daily Expenses by Category</h5>
+                <canvas id="pieDaily"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Monthly Expenses by Category</h5>
+                <canvas id="pieMonthly"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Yearly Expenses by Category</h5>
+                <canvas id="pieYearly"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function renderPie(canvasId, labels, values) {
+            const ctx = document.getElementById(canvasId);
+            new Chart(ctx, {
+                type: 'pie',
+                data: { labels: labels, datasets: [{ data: values }] }
+            });
+        }
+
+        renderPie(
+            'pieDaily',
+            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyCategoryTotals.Select(x => x.CategoryName))),
+            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyCategoryTotals.Select(x => x.TotalAmount)))
+        );
+        renderPie(
+            'pieMonthly',
+            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyCategoryTotals.Select(x => x.CategoryName))),
+            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyCategoryTotals.Select(x => x.TotalAmount)))
+        );
+        renderPie(
+            'pieYearly',
+            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.YearlyCategoryTotals.Select(x => x.CategoryName))),
+            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.YearlyCategoryTotals.Select(x => x.TotalAmount)))
+        );
+    </script>
+}
+
+

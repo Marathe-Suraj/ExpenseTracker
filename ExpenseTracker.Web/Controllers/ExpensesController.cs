@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using ExpenseTracker.Web.Models;
 using ExpenseTracker.Web.Services;
 using ExpenseTracker.Web.ViewModels;
@@ -110,7 +107,9 @@ namespace ExpenseTracker.Web.Controllers
             filter.Page = 1; filter.PageSize = int.MaxValue;
             var data = await _expenseService.SearchAsync(userId, filter);
             var bytes = _expenseService.ExportToExcel(data.Items);
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "expenses.xlsx");
+            var ts = DateTime.Now.ToString("ddMMyyyyhhmmss");
+            var filename = $"ExpensesReport_{ts}.xlsx";
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename);
         }
 
         [HttpGet]
@@ -120,7 +119,9 @@ namespace ExpenseTracker.Web.Controllers
             filter.Page = 1; filter.PageSize = int.MaxValue;
             var data = await _expenseService.SearchAsync(userId, filter);
             var bytes = _expenseService.ExportToPdf(data.Items);
-            return File(bytes, "application/pdf", "expenses.pdf");
+            var ts = DateTime.Now.ToString("ddMMyyyyhhmmss");
+            var filename = $"ExpensesReport_{ts}.pdf";
+            return File(bytes, "application/pdf", filename);
         }
     }
 }

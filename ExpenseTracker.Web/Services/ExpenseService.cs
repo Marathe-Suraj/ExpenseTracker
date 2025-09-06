@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using ClosedXML.Excel;
 using ExpenseTracker.Web.Data.Repositories;
 using ExpenseTracker.Web.Models;
 using ExpenseTracker.Web.ViewModels;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
-using Microsoft.Extensions.Logging;
+using System.Globalization;
 
 namespace ExpenseTracker.Web.Services
 {
@@ -109,21 +104,94 @@ namespace ExpenseTracker.Web.Services
 
         public byte[] ExportToExcel(IEnumerable<Expense> expenses)
         {
+            var items = expenses.ToList();
+            var generatedAt = DateTime.Now;
+            var hasData = items.Any();
+            var periodText = hasData
+                ? $"{items.Min(e => e.ExpenseDate):yyyy-MM-dd} - {items.Max(e => e.ExpenseDate):yyyy-MM-dd}"
+                : "No data available";
+
             using var workbook = new XLWorkbook();
             var ws = workbook.AddWorksheet("Expenses");
-            ws.Cell(1, 1).Value = "Date";
-            ws.Cell(1, 2).Value = "Category";
-            ws.Cell(1, 3).Value = "Amount";
-            ws.Cell(1, 4).Value = "Description";
-            var row = 2;
-            foreach (var e in expenses)
+
+            // Title
+            ws.Cell(1, 1).Value = "ExpenseTracker - Expenses Report";
+            ws.Range(1, 1, 1, 4).Merge().Style
+                .Font.SetBold().Font.SetFontSize(16)
+                .Font.SetFontColor(XLColor.FromHtml("#2563EB"));
+
+            // Meta
+            ws.Cell(2, 1).Value = $"Generated: {generatedAt:yyyy-MM-dd HH:mm}    Period: {periodText}";
+            ws.Range(2, 1, 2, 4).Merge().Style
+                .Font.SetFontSize(10)
+                .Font.SetFontColor(XLColor.FromHtml("#6B7280"));
+
+            // Header row
+            var headerRow = 4;
+            ws.Cell(headerRow, 1).Value = "Date";
+            ws.Cell(headerRow, 2).Value = "Category";
+            ws.Cell(headerRow, 3).Value = "Amount";
+            ws.Cell(headerRow, 4).Value = "Description";
+
+            // Data rows
+            var row = headerRow + 1;
+            foreach (var e in items)
             {
                 ws.Cell(row, 1).Value = e.ExpenseDate;
-                ws.Cell(row, 2).Value = e.Category;
-                ws.Cell(row, 3).Value = e.Amount;
+                ws.Cell(row, 2).Value = string.IsNullOrWhiteSpace(e.Category) ? $"#{e.CategoryId}" : e.Category;
+                ws.Cell(row, 3).Value = e. Amount;
                 ws.Cell(row, 4).Value = e.Description;
                 row++;
             }
+
+            // Styling & formats
+            ws.Column(1).Width = 16; // Date
+            ws.Column(2).Width = 22; // Category
+            ws.Column(3).Width = 14; // Amount
+            ws.Column(4).Width = 48; // Description
+
+            ws.Column(1).Style.DateFormat.Format = "dd-MM-yyyy";
+            var currencySymbol = CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol;
+            ws.Column(3).Style.NumberFormat.Format = $"{currencySymbol} #,##0.00";
+
+            // Create table with totals
+            var lastDataRow = Math.Max(headerRow + 1, row - 1);
+            var range = ws.Range(headerRow, 1, lastDataRow, 4);
+            var table = range.CreateTable();
+            table.Theme = XLTableTheme.TableStyleMedium9;
+            table.ShowTotalsRow = true;
+            table.Field("Category").TotalsRowLabel = "Total";
+            table.Field("Amount").TotalsRowFunction = XLTotalsRowFunction.Sum;
+
+            // Freeze header
+            ws.SheetView.FreezeRows(headerRow);
+
+            // Summary sheet by category
+            var summary = workbook.AddWorksheet("Summary");
+            summary.Cell(1, 1).Value = "Totals by Category";
+            summary.Range(1, 1, 1, 2).Merge().Style.Font.SetBold().Font.SetFontSize(13);
+            summary.Cell(3, 1).Value = "Category";
+            summary.Cell(3, 2).Value = "Total";
+            var r = 4;
+            foreach (var g in items
+                .GroupBy(x => string.IsNullOrWhiteSpace(x.Category) ? $"#{x.CategoryId}" : x.Category!)
+                .Select(g => new { Category = g.Key, Total = g.Sum(x => x.Amount) })
+                .OrderByDescending(x => x.Total))
+            {
+                summary.Cell(r, 1).Value = g.Category;
+                summary.Cell(r, 2).Value = g.Total;
+                r++;
+            }
+            summary.Column(1).Width = 30;
+            summary.Column(2).Width = 18;
+            summary.Column(2).Style.NumberFormat.Format = $"{currencySymbol} #,##0.00";
+            var sRange = summary.Range(3, 1, Math.Max(3, r - 1), 2);
+            var sTable = sRange.CreateTable();
+            sTable.Theme = XLTableTheme.TableStyleMedium2;
+            sTable.ShowTotalsRow = true;
+            sTable.Field("Category").TotalsRowLabel = "Grand Total";
+            sTable.Field("Total").TotalsRowFunction = XLTotalsRowFunction.Sum;
+
             using var stream = new System.IO.MemoryStream();
             workbook.SaveAs(stream);
             return stream.ToArray();
@@ -131,38 +199,128 @@ namespace ExpenseTracker.Web.Services
 
         public byte[] ExportToPdf(IEnumerable<Expense> expenses)
         {
+            var items = expenses.ToList();
+            var generatedAt = DateTime.Now;
+            var hasData = items.Any();
+            var periodText = hasData
+                ? $"{items.Min(e => e.ExpenseDate):yyyy-MM-dd} - {items.Max(e => e.ExpenseDate):yyyy-MM-dd}"
+                : "No data available";
+            var totalAmount = items.Sum(x => x.Amount);
+            var totalCount = items.Count;
+
             var doc = Document.Create(container =>
             {
                 container.Page(page =>
                 {
-                    page.Margin(30);
-                    page.Header().Text("Expenses").SemiBold().FontSize(20);
-                    page.Content().Table(table =>
+                    page.Margin(40);
+
+                    page.Header().Element(header =>
                     {
-                        table.ColumnsDefinition(columns =>
+                        header.Row(row =>
                         {
-                            columns.ConstantColumn(80);
-                            columns.RelativeColumn(2);
-                            columns.ConstantColumn(100);
-                            columns.RelativeColumn(3);
+                            row.RelativeItem().Column(col =>
+                            {
+                                col.Item().Text("ExpenseTracker").FontSize(22).Bold().FontColor(Colors.Blue.Medium);
+                                col.Item().Text("Expenses Report").FontSize(14).SemiBold();
+                                col.Item().Text(t =>
+                                {
+                                    t.DefaultTextStyle(x => x.FontSize(10).FontColor(Colors.Grey.Darken2));
+                                    t.Span("Generated: ").SemiBold();
+                                    t.Span(generatedAt.ToString("yyyy-MM-dd HH:mm"));
+                                    if (hasData)
+                                    {
+                                        t.Span("    Period: ").SemiBold();
+                                        t.Span(periodText);
+                                    }
+                                });
+                            });
+
+                            row.ConstantItem(160).Border(1).BorderColor(Colors.Blue.Medium).Padding(10).AlignCenter().Column(col =>
+                            {
+                                col.Item().Text("Total").SemiBold().FontSize(10).FontColor(Colors.Grey.Darken2);
+                                col.Item().Text(totalAmount.ToString("C2")).Bold().FontSize(16);
+                                col.Item().Text($"{totalCount} item{(totalCount == 1 ? "" : "s")}").SemiBold().FontSize(11).FontColor(Colors.Grey.Darken2);
+                            });
                         });
-                        table.Header(header =>
+                    });
+
+                    page.Content().PaddingVertical(10).Column(col =>
+                    {
+                        col.Item().Table(table =>
                         {
-                            header.Cell().Text("Date");
-                            header.Cell().Text("CategoryId");
-                            header.Cell().Text("Amount");
-                            header.Cell().Text("Description");
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.ConstantColumn(120); // Date
+                                columns.RelativeColumn(2);   // Category
+                                columns.RelativeColumn(3);   // Description
+                                columns.ConstantColumn(90);  // Amount
+                            });
+
+                            table.Header(header =>
+                            {
+                                header.Cell().Padding(6).Background(Colors.Grey.Lighten3).Text("Date").SemiBold();
+                                header.Cell().Padding(6).Background(Colors.Grey.Lighten3).Text("Category").SemiBold();
+                                header.Cell().Padding(6).Background(Colors.Grey.Lighten3).Text("Description").SemiBold();
+                                header.Cell().Padding(6).Background(Colors.Grey.Lighten3).AlignRight().Text("Amount").SemiBold();
+                            });
+
+                            foreach (var e in items)
+                            {
+                                table.Cell().Padding(6).Text(e.ExpenseDate.ToString("dd-MM-yyyy"));
+                                table.Cell().Padding(6).Text(!string.IsNullOrWhiteSpace(e.Category) ? e.Category! : e.CategoryId.ToString());
+                                table.Cell().Padding(6).Text(e.Description);
+                                table.Cell().Padding(6).AlignRight().Text(e.Amount.ToString("C2"));
+                            }
+
+                            table.Footer(footer =>
+                            {
+                                footer.Cell().ColumnSpan(3).Padding(6).Background(Colors.Grey.Lighten3).AlignRight().Text("Total").SemiBold();
+                                footer.Cell().Padding(6).Background(Colors.Grey.Lighten3).AlignRight().Text(totalAmount.ToString("C2")).SemiBold();
+                            });
                         });
-                        foreach (var e in expenses)
+
+                        var byCategory = items
+                            .GroupBy(x => string.IsNullOrWhiteSpace(x.Category) ? $"#{x.CategoryId}" : x.Category!)
+                            .Select(g => new { Category = g.Key, Total = g.Sum(x => x.Amount) })
+                            .OrderByDescending(x => x.Total)
+                            .ToList();
+
+                        if (byCategory.Any())
                         {
-                            table.Cell().Text(e.ExpenseDate.ToShortDateString());
-                            table.Cell().Text(e.CategoryId.ToString());
-                            table.Cell().Text(e.Amount.ToString("C2"));
-                            table.Cell().Text(e.Description);
+                            col.Item().PaddingTop(16).Text("Totals by Category").SemiBold().FontSize(12);
+                            col.Item().Table(table =>
+                            {
+                                table.ColumnsDefinition(c =>
+                                {
+                                    c.RelativeColumn(3);
+                                    c.ConstantColumn(110);
+                                });
+
+                                table.Header(h =>
+                                {
+                                    h.Cell().Padding(6).Background(Colors.Grey.Lighten3).Text("Category").SemiBold();
+                                    h.Cell().Padding(6).Background(Colors.Grey.Lighten3).AlignRight().Text("Total").SemiBold();
+                                });
+
+                                foreach (var c in byCategory)
+                                {
+                                    table.Cell().Padding(6).Text(c.Category);
+                                    table.Cell().Padding(6).AlignRight().Text(c.Total.ToString("C2"));
+                                }
+                            });
                         }
+                    });
+
+                    page.Footer().AlignCenter().Text(t =>
+                    {
+                        t.Span("Page ");
+                        t.CurrentPageNumber();
+                        t.Span(" of ");
+                        t.TotalPages();
                     });
                 });
             });
+
             return doc.GeneratePdf();
         }
     }

@@ -1,4 +1,9 @@
+using QuestPDF.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure QuestPDF to use the free Community license
+QuestPDF.Settings.License = LicenseType.Community;
 
 // Add services to the container.
 var mvcBuilder = builder.Services.AddControllersWithViews();

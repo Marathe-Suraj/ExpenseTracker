@@ -1,0 +1,108 @@
+/* Dashboard modern styles */
+.dashboard-hero {
+	background: linear-gradient(135deg, rgba(13,110,253,.12), rgba(32,201,151,.12));
+	border: 1px solid rgba(108,117,125,.15);
+	border-radius: 1rem;
+	padding: 1rem 1.25rem;
+	backdrop-filter: blur(6px);
+}
+
+.stat-tile {
+	position: relative;
+	border-radius: 1rem;
+	padding: 1.25rem;
+	background: var(--bs-body-bg);
+	border: 1px solid rgba(108,117,125,.18);
+	box-shadow: 0 10px 30px rgba(0,0,0,.05);
+	transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.stat-tile:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(0,0,0,.07); border-color: rgba(13,110,253,.35); }
+.stat-tile .icon {
+	width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: .75rem;
+	background: rgba(13,110,253,.12); color: #0d6efd;
+}
+.stat-tile .value { font-size: clamp(1.25rem, 2vw, 1.75rem); font-weight: 700; letter-spacing: .2px; }
+.stat-tile .label { color: var(--bs-secondary-color); font-weight: 500; }
+
+/* Theme-specific surfaces and readability */
+[data-bs-theme="light"] .stat-tile { background-color: #ffffff; }
+[data-bs-theme="dark"] .stat-tile { background-color: #1f1f1f; border-color: rgba(255,255,255,.12); }
+.stat-tile .value { color: var(--bs-emphasis-color); }
+
+.card-neo {
+	border-radius: 1rem; border: 1px solid rgba(108,117,125,.18);
+	background: var(--bs-body-bg); box-shadow: 0 10px 30px rgba(0,0,0,.05);
+}
+[data-bs-theme="dark"] .card-neo { background-color: #1b1b1b; }
+.dashboard-hero .small { color: var(--bs-secondary-color); }
+
+.chart-container { position: relative; height: 260px; }
+
+.table-modern thead th { color: var(--bs-secondary-color); font-weight: 600; text-transform: uppercase; font-size: .78rem; letter-spacing: .04em; }
+.table-modern tbody tr { transition: background-color .15s ease; }
+.table-modern tbody tr:hover { background-color: rgba(13,110,253,.06); }
+
+/* DataTables dark adjustment */
+.dt-dark .dataTables_info, .dt-dark .dataTables_paginate .pagination .page-link { color: var(--bs-body-color); }
+.dt-dark .dataTables_wrapper .dataTables_paginate .page-item .page-link { background-color: transparent; border-color: rgba(255,255,255,.12); }
+.dt-dark .dataTables_wrapper .dataTables_paginate .page-item.active .page-link { background-color: #0d6efd; border-color: #0d6efd; color: #fff; }
+
+/* Improve DataTables pagination visibility in dark mode */
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .pagination .page-link {
+	color: #e6e6e6 !important;
+	background-color: transparent;
+	border-color: rgba(255,255,255,.18) !important;
+}
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .pagination .page-link:hover {
+	color: #ffffff !important;
+	background-color: rgba(13,110,253,.12);
+	border-color: #0d6efd !important;
+}
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .pagination .page-item.disabled .page-link {
+	color: rgba(255,255,255,.45) !important;
+	border-color: rgba(255,255,255,.12) !important;
+}
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link {
+	color: #fff !important;
+	background-color: #0d6efd !important;
+	border-color: #0d6efd !important;
+}
+
+/* Fallback for DataTables v2 dt-paging buttons (non-Bootstrap markup) */
+[data-bs-theme="dark"] .dt-paging .dt-paging-button {
+	color: #e6e6e6 !important;
+	border: 1px solid rgba(255,255,255,.18) !important;
+	background: transparent !important;
+}
+[data-bs-theme="dark"] .dt-paging .dt-paging-button:hover { color: #fff !important; border-color: #0d6efd !important; background: rgba(13,110,253,.12) !important; }
+[data-bs-theme="dark"] .dt-paging .dt-paging-button.current { color: #fff !important; background: #0d6efd !important; border-color: #0d6efd !important; }
+[data-bs-theme="dark"] .dt-paging .dt-paging-button.disabled { color: rgba(255,255,255,.45) !important; border-color: rgba(255,255,255,.12) !important; }
+
+/* Ensure Bootstrap pagination tokens show in dark mode (regardless of DataTables) */
+[data-bs-theme="dark"] .pagination .page-link { color: #e6e6e6 !important; background: transparent !important; border-color: rgba(255,255,255,.18) !important; }
+[data-bs-theme="dark"] .pagination .page-link:hover { color: #fff !important; border-color: #0d6efd !important; background: rgba(13,110,253,.12) !important; }
+[data-bs-theme="dark"] .pagination .page-item.disabled .page-link { color: rgba(255,255,255,.45) !important; border-color: rgba(255,255,255,.12) !important; }
+[data-bs-theme="dark"] .pagination .page-item.active .page-link { color: #fff !important; background: #0d6efd !important; border-color: #0d6efd !important; }
+
+.pill-uptrend { color: #198754; background: rgba(25,135,84,.12); border-radius: 999px; padding: .25rem .5rem; font-weight: 600; }
+.pill-downtrend { color: #dc3545; background: rgba(220,53,69,.12); border-radius: 999px; padding: .25rem .5rem; font-weight: 600; }
+
+.fade-in { animation: fadeIn .4s ease both; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+
+/* Dark mode tweaks */
+[data-bs-theme="dark"] .stat-tile { box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+[data-bs-theme="dark"] .table-modern tbody tr:hover { background-color: rgba(255,255,255,.06); }
+[data-bs-theme="dark"] .dashboard-hero { border-color: rgba(255,255,255,.1); }
+[data-bs-theme="dark"] .card-neo { border-color: rgba(255,255,255,.1); }
+[data-bs-theme="dark"] .stat-tile .icon { background: rgba(13,110,253,.2); }
+
+/* Softer hero background per theme for better contrast */
+[data-bs-theme="light"] .dashboard-hero { background: linear-gradient(135deg, rgba(13,110,253,.08), rgba(32,201,151,.08)); }
+[data-bs-theme="dark"] .dashboard-hero { background: linear-gradient(135deg, rgba(13,110,253,.18), rgba(32,201,151,.14)); }
+
+/* Pagination contrast in dark mode */
+[data-bs-theme="dark"] .pagination .page-link { background-color: transparent; border-color: rgba(255,255,255,.12); color: var(--bs-body-color); }
+[data-bs-theme="dark"] .pagination .page-item.active .page-link { background-color: #0d6efd; border-color: #0d6efd; color: #fff; }
+
+

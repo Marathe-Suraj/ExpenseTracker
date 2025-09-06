@@ -2,87 +2,197 @@
 @{
     ViewData["Title"] = "Dashboard";
 }
+
+<div class="dashboard-hero mb-3 fade-in">
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                <span class="icon d-inline-flex align-items-center justify-content-center" style="width:48px;height:48px;border-radius:12px;background:rgba(13,110,253,.12);color:#0d6efd;">
+                    <i class="bi bi-wallet2"></i>
+                </span>
+            </div>
+            <div>
+                <div class="fw-semibold text-uppercase small text-muted">Overview</div>
+                <h4 class="mb-0">Your Expense Dashboard</h4>
+            </div>
+        </div>
+        <div>
+            <button class="btn btn-outline-secondary" data-show-details>
+                <i class="bi bi-list-ul me-1"></i> View Details
+            </button>
+        </div>
+    </div>
+    <div class="small text-muted mt-2">Track today's spending, this month, and annual totals at a glance.</div>
+    </div>
+
 <div class="row g-3">
-    <div class="col-md-4">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="text-muted">Total Today</div>
-                <div class="h4">@Model.TotalToday.ToString("C2")</div>
+    <div class="col-12 col-md-4">
+        <div class="stat-tile fade-in">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="label">Total Today</div>
+                    <div class="value" data-counter data-target="@Model.TotalToday.ToString(System.Globalization.CultureInfo.InvariantCulture)" >@Model.TotalToday.ToString("C2")</div>
+                </div>
+                <div class="icon"><i class="bi bi-sun"></i></div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="text-muted">Total This Month</div>
-                <div class="h4">@Model.TotalThisMonth.ToString("C2")</div>
+    <div class="col-12 col-md-4">
+        <div class="stat-tile fade-in">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="label">Total This Month</div>
+                    <div class="value" data-counter data-target="@Model.TotalThisMonth.ToString(System.Globalization.CultureInfo.InvariantCulture)">@Model.TotalThisMonth.ToString("C2")</div>
+                </div>
+                <div class="icon"><i class="bi bi-calendar3"></i></div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="text-muted">Total This Year</div>
-                <div class="h4">@Model.TotalThisYear.ToString("C2")</div>
+    <div class="col-12 col-md-4">
+        <div class="stat-tile fade-in">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="label">Total This Year</div>
+                    <div class="value" data-counter data-target="@Model.TotalThisYear.ToString(System.Globalization.CultureInfo.InvariantCulture)">@Model.TotalThisYear.ToString("C2")</div>
+                </div>
+                <div class="icon"><i class="bi bi-bar-chart"></i></div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row g-3 mt-1">
-    <div class="col-md-4">
-        <div class="card shadow-sm">
+    <div class="col-12 col-md-4">
+        <div class="card card-neo h-100">
             <div class="card-body">
-                <h5 class="card-title">Daily Expenses by Category</h5>
-                <canvas id="pieDaily"></canvas>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mb-0">Daily by Category</h6>
+                    <i class="bi bi-pie-chart"></i>
+                </div>
+                <div class="chart-container">
+                    <canvas id="pieDaily"></canvas>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card shadow-sm">
+    <div class="col-12 col-md-4">
+        <div class="card card-neo h-100">
             <div class="card-body">
-                <h5 class="card-title">Monthly Expenses by Category</h5>
-                <canvas id="pieMonthly"></canvas>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mb-0">Monthly by Category</h6>
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="chart-container">
+                    <canvas id="pieMonthly"></canvas>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card shadow-sm">
+    <div class="col-12 col-md-4">
+        <div class="card card-neo h-100">
             <div class="card-body">
-                <h5 class="card-title">Yearly Expenses by Category</h5>
-                <canvas id="pieYearly"></canvas>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mb-0">Yearly by Category</h6>
+                    <i class="bi bi-activity"></i>
+                </div>
+                <div class="chart-container">
+                    <canvas id="pieYearly"></canvas>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<div class="row g-3 mt-1">
+    <div class="col-12">
+        <div class="card card-neo">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mb-0">Top Categories This Month</h6>
+                    <span class="text-muted small">Based on spend</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 table-modern">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.MonthlyCategoryTotals.Any())
+                            {
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted">No data</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item in Model.MonthlyCategoryTotals.OrderByDescending(x => x.TotalAmount).Take(6))
+                                {
+                                    <tr>
+                                        <td>@item.CategoryName</td>
+                                        <td class="text-end fw-semibold">@item.TotalAmount.ToString("C2")</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Monthly Breakdown</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2 small text-muted">Categories and totals for the current month.</div>
+                <ul class="list-group list-group-flush">
+                    @if (!Model.MonthlyCategoryTotals.Any())
+                    {
+                        <li class="list-group-item text-muted">No data</li>
+                    }
+                    else
+                    {
+                        foreach (var item in Model.MonthlyCategoryTotals.OrderByDescending(x => x.TotalAmount))
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>@item.CategoryName</span>
+                                <span class="fw-semibold">@item.TotalAmount.ToString("C2")</span>
+                            </li>
+                        }
+                    }
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data for charts as JSON -->
+<script id="dailyLabels" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyCategoryTotals.Select(x => x.CategoryName)))</script>
+<script id="dailyValues" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyCategoryTotals.Select(x => x.TotalAmount)))</script>
+<script id="monthlyLabels" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyCategoryTotals.Select(x => x.CategoryName)))</script>
+<script id="monthlyValues" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyCategoryTotals.Select(x => x.TotalAmount)))</script>
+<script id="yearlyLabels" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.YearlyCategoryTotals.Select(x => x.CategoryName)))</script>
+<script id="yearlyValues" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.YearlyCategoryTotals.Select(x => x.TotalAmount)))</script>
+
+@section Styles{
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+}
+
 @section Scripts{
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        function renderPie(canvasId, labels, values) {
-            const ctx = document.getElementById(canvasId);
-            new Chart(ctx, {
-                type: 'pie',
-                data: { labels: labels, datasets: [{ data: values }] }
-            });
-        }
-
-        renderPie(
-            'pieDaily',
-            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyCategoryTotals.Select(x => x.CategoryName))),
-            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyCategoryTotals.Select(x => x.TotalAmount)))
-        );
-        renderPie(
-            'pieMonthly',
-            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyCategoryTotals.Select(x => x.CategoryName))),
-            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyCategoryTotals.Select(x => x.TotalAmount)))
-        );
-        renderPie(
-            'pieYearly',
-            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.YearlyCategoryTotals.Select(x => x.CategoryName))),
-            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.YearlyCategoryTotals.Select(x => x.TotalAmount)))
-        );
-    </script>
+    <script src="~/js/dashboard.js" asp-append-version="true"></script>
 }
 
 

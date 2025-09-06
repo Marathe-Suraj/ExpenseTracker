@@ -43,4 +43,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Hide server pagination if DataTable is active
+    if (window.DataTable && document.querySelector('#expensesTable')) {
+        var pag = document.getElementById('serverPagination');
+        if (pag) pag.style.display = 'none';
+    }
 });

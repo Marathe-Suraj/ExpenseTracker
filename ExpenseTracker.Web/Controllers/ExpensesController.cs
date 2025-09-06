@@ -33,6 +33,9 @@ namespace ExpenseTracker.Web.Controllers
         public async Task<IActionResult> Index([FromQuery] ExpenseFilterViewModel filter)
         {
             var userId = _authService.GetCurrentUserId()!.Value;
+            // Load full dataset for client-side DataTables so all entries are available for paging/search
+            filter.Page = 1;
+            filter.PageSize = int.MaxValue;
             filter.Categories = await BuildCategoriesSelectList(userId);
             var result = await _expenseService.SearchAsync(userId, filter);
             ViewBag.Paged = result;
@@ -58,6 +61,12 @@ namespace ExpenseTracker.Web.Controllers
                 ViewBag.Categories = await BuildCategoriesSelectList(userId);
                 return View(model);
             }
+            if (model.Amount <= 0)
+            {
+                ModelState.AddModelError(nameof(model.Amount), "Amount must be greater than 0");
+                ViewBag.Categories = await BuildCategoriesSelectList(userId);
+                return View(model);
+            }
             model.UserId = userId;
             model.CreatedDate = DateTime.UtcNow;
             await _expenseService.CreateAsync(model);
@@ -79,6 +88,12 @@ namespace ExpenseTracker.Web.Controllers
             var userId = _authService.GetCurrentUserId()!.Value;
             if (!ModelState.IsValid)
             {
+                ViewBag.Categories = await BuildCategoriesSelectList(userId);
+                return View(model);
+            }
+            if (model.Amount <= 0)
+            {
+                ModelState.AddModelError(nameof(model.Amount), "Amount must be greater than 0");
                 ViewBag.Categories = await BuildCategoriesSelectList(userId);
                 return View(model);
             }

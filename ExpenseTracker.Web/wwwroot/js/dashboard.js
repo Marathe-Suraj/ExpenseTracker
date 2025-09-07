@@ -21,7 +21,27 @@
 
 	function makePieChart(canvasId, labels, values){
 		const el = document.getElementById(canvasId);
+		const emptyEl = document.getElementById(canvasId + 'Empty');
 		if(!el || typeof Chart === 'undefined') return;
+		
+		// Check if there's any data
+		const hasData = values && values.length > 0 && values.some(v => v > 0);
+		
+		if (!hasData) {
+			// Hide canvas and show empty message
+			el.style.display = 'none';
+			if (emptyEl) {
+				emptyEl.classList.remove('d-none');
+			}
+			return;
+		}
+		
+		// Show canvas and hide empty message
+		el.style.display = 'block';
+		if (emptyEl) {
+			emptyEl.classList.add('d-none');
+		}
+		
 		const baseColors = ['#0d6efd','#6f42c1','#20c997','#fd7e14','#dc3545','#198754','#0dcaf0','#ffc107'];
 		const colors = values.map((_,i)=>baseColors[i % baseColors.length]);
 		new Chart(el, {

@@ -21,13 +21,13 @@
             <a class="btn btn-outline-secondary me-2 d-none d-sm-inline-flex" asp-action="ExportExcel" asp-route-search="@filter.Search" asp-route-categoryId="@filter.CategoryId" asp-route-fromDate="@filter.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@filter.ToDate?.ToString("yyyy-MM-dd")"><i class="bi bi-file-earmark-excel me-1"></i>Excel</a>
             <a class="btn btn-outline-secondary me-2 d-none d-sm-inline-flex" asp-action="ExportPdf" asp-route-search="@filter.Search" asp-route-categoryId="@filter.CategoryId" asp-route-fromDate="@filter.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@filter.ToDate?.ToString("yyyy-MM-dd")"><i class="bi bi-filetype-pdf me-1"></i>PDF</a>
             <button type="button" class="btn btn-outline-secondary me-2 d-sm-none" data-bs-toggle="modal" data-bs-target="#exportModal"><i class="bi bi-box-arrow-up"></i></button>
-            <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg me-1"></i>New Expense</a>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#expenseModal" data-url="@Url.Action("Create","Expenses")"><i class="bi bi-plus-lg me-1"></i>New Expense</button>
         </div>
     </div>
     <div class="small text-muted mt-2">Filter, export and manage all your expenses.</div>
 </div>
 
-<form method="get" class="card card-neo mb-3 p-3">
+<form method="get" class="card card-neo mb-3 p-3" id="filterForm">
     <div class="row g-2 align-items-end">
         <div class="col-md-4">
             <label class="form-label">Category</label>
@@ -50,79 +50,14 @@
             </div>
         </div>
         <div class="col-md-2">
-            <button class="btn btn-secondary w-100">Go</button>
+            <button class="btn btn-secondary w-100" id="filterGoBtn">Go</button>
         </div>
     </div>
 </form>
 
-<div class="d-none d-md-block">
-    <div class="card card-neo">
-        <div class="table-responsive">
-            <table id="expensesTable" class="table table-hover align-middle mb-0 table-modern">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Category</th>
-                        <th class="text-end">Amount</th>
-                        <th>Description</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var e in Model)
-                    {
-                        <tr>
-                            <td>@e.ExpenseDate.ToString("dd-MM-yyyy")</td>
-                            <td>@(((IDictionary<int, string>)ViewBag.CatLookup)[e.CategoryId])</td>
-                            <td class="text-end">@e.Amount.ToString("C2")</td>
-                            <td>@e.Description</td>
-                            <td class="text-end">
-                                <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@e.ExpenseId">Edit</a>
-                                <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@e.ExpenseId">Delete</a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
+<div id="expensesList" data-list-url="@Url.Action("List","Expenses")">
+    @await Html.PartialAsync("_ExpenseList", Model)
 </div>
-
-<div class="d-md-none">
-    <div class="row g-3">
-        @foreach (var e in Model)
-        {
-            <div class="col-12">
-                <div class="card card-neo">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <div class="fw-semibold"><i class="bi bi-receipt-cutoff me-1"></i>@e.Description</div>
-                                <div class="text-muted small"><i class="bi bi-calendar3 me-1"></i>@e.ExpenseDate.ToString("dd-MM-yyyy") • <i class="bi bi-bookmark me-1"></i>@(((IDictionary<int, string>)ViewBag.CatLookup)[e.CategoryId])</div>
-                            </div>
-                            <div class="fw-bold">@e.Amount.ToString("C2")</div>
-                        </div>
-                        <div class="mt-2 text-end">
-                            <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@e.ExpenseId">Edit</a>
-                            <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@e.ExpenseId">Delete</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-    </div>
-
-<nav id="serverPagination" aria-label="Page navigation" class="mt-3">
-    <ul class="pagination">
-        @for (int p = 1; p <= paged.TotalPages; p++)
-        {
-            <li class="page-item @(p == paged.Page ? "active" : "")">
-                <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-pageSize="@paged.PageSize" asp-route-search="@filter.Search" asp-route-categoryId="@filter.CategoryId" asp-route-fromDate="@filter.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@filter.ToDate?.ToString("yyyy-MM-dd")">@p</a>
-            </li>
-        }
-    </ul>
-</nav>
 
 
 <!-- Export Modal (mobile friendly) -->
@@ -156,14 +91,21 @@
     <script src="~/js/tables.js" asp-append-version="true"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function(){
-            if (window.initDataTable) {
-                window.initDataTable('#expensesTable', {
-                    columnDefs: [
-                        { targets: 2, className: 'text-end' },
-                        { targets: 4, orderable: false, searchable: false, className: 'text-end' }
-                    ]
-                });
-            }
+            window.initializeExpensesPage && window.initializeExpensesPage();
         });
     </script>
 }
+
+<!-- Modal Host -->
+<div class="modal fade" id="expenseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-body p-0 position-relative" id="expenseModalBody">
+                <div class="p-5 text-center text-muted" id="expenseModalLoader" style="display:none;">
+                    <div class="spinner-border text-primary mb-3" role="status"></div>
+                    <div>Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

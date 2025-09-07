@@ -49,4 +49,118 @@ document.addEventListener('DOMContentLoaded', function() {
         var pag = document.getElementById('serverPagination');
         if (pag) pag.style.display = 'none';
     }
+
+    // AJAX filter submit to refresh list only
+    $(document).off('submit', '#filterForm').on('submit', '#filterForm', function(e){
+        e.preventDefault();
+        const qs = $(this).serialize();
+        const newUrl = window.location.pathname + '?' + qs;
+        window.history.replaceState({}, '', newUrl);
+        window.refreshExpensesList();
+    });
 });
+
+// Global initializer to setup DataTable and ajax behaviors
+window.initializeExpensesPage = function(){
+    // init datatable on current list
+    if (window.initDataTable) {
+        window.initDataTable('#expensesTable', {
+            columnDefs: [
+                { targets: 2, className: 'text-end' },
+                { targets: 4, orderable: false, searchable: false, className: 'text-end' }
+            ]
+        });
+    }
+
+    // intercept modal openers
+    $(document).off('click', '.open-expense-modal').on('click', '.open-expense-modal', function(e){
+        e.preventDefault();
+        const url = $(this).data('url');
+        const $modal = $('#expenseModal');
+        const $body = $('#expenseModalBody');
+        const $loader = $('#expenseModalLoader');
+        $loader.show();
+        $body.addClass('position-relative');
+        $.ajax({ url: url, headers: { 'X-Requested-With': 'XMLHttpRequest' } }).done(function(html){
+            $body.html(html);
+            $loader.hide();
+        }).fail(function(){
+            $body.html('<div class="p-4 text-danger">Failed to load. Please try again.</div>');
+            $loader.hide();
+        });
+    });
+
+    // New Expense top button
+    $(document).off('click', '[data-bs-target="#expenseModal"][data-url]').on('click', '[data-bs-target="#expenseModal"][data-url]', function(){
+        const url = $(this).data('url');
+        const $body = $('#expenseModalBody');
+        const $loader = $('#expenseModalLoader');
+        $loader.show();
+        $.ajax({ url: url, headers: { 'X-Requested-With': 'XMLHttpRequest' } }).done(function(html){
+            $body.html(html);
+            $loader.hide();
+        }).fail(function(){
+            $body.html('<div class="p-4 text-danger">Failed to load. Please try again.</div>');
+            $loader.hide();
+        });
+    });
+
+    // delegate form submit (create/edit/delete)
+    $(document).off('submit', '#expenseForm, #expenseDeleteForm').on('submit', '#expenseForm, #expenseDeleteForm', function(e){
+        e.preventDefault();
+        const $form = $(this);
+        const url = $form.attr('action') || window.location.href;
+        const method = ($form.attr('method') || 'post').toUpperCase();
+        const $submitBtn = $form.find('button[type="submit"]');
+        const originalHtml = $submitBtn.html();
+        $submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving');
+        $.ajax({
+            url: url,
+            type: method,
+            data: $form.serialize(),
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }).done(function(resp){
+            // if JSON success
+            if (typeof resp === 'object' && resp && resp.success) {
+                refreshExpensesList();
+                const modalEl = document.getElementById('expenseModal');
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.hide();
+                return;
+            }
+            // else it returned html with validation summary
+            $('#expenseModalBody').html(resp);
+        }).fail(function(xhr){
+            const text = xhr.responseText || 'An error occurred';
+            $('#expenseModalBody').html('<div class="p-4 text-danger">'+text+'</div>');
+        }).always(function(){
+            $submitBtn.prop('disabled', false).html(originalHtml);
+        });
+    });
+}
+
+window.refreshExpensesList = function(){
+    const $listHost = $('#expensesList');
+    if ($listHost.length === 0) return;
+    const baseUrl = $listHost.data('list-url') || (window.location.pathname.replace(/\/$/, '') + '/List');
+    const url = baseUrl + window.location.search;
+    // show a lightweight loader inline
+    const original = $listHost.html();
+    $listHost.html('<div class="text-center p-5"><div class="spinner-border text-primary"></div></div>');
+    $.ajax({ url: url, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+     .done(function(html){
+        $listHost.html(html);
+        // re-init table
+        if (window.initDataTable) {
+            window.initDataTable('#expensesTable', {
+                columnDefs: [
+                    { targets: 2, className: 'text-end' },
+                    { targets: 4, orderable: false, searchable: false, className: 'text-end' }
+                ]
+            });
+        }
+     })
+     .fail(function(){
+        $listHost.html(original);
+     });
+}

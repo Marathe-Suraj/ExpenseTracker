@@ -1,0 +1,39 @@
+@model IEnumerable<ExpenseTracker.Web.Models.Category>
+
+<div class="card card-neo">
+    <div class="table-responsive">
+        <table id="categoriesTable" class="table table-hover align-middle mb-0 table-modern">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Active</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td>@c.Name</td>
+                    <td>
+                        @if (c.IsActive)
+                        {
+                            <span class="pill-uptrend">Active</span>
+                        }
+                        else
+                        {
+                            <span class="pill-downtrend">Inactive</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary open-category-modal" data-bs-toggle="modal" data-bs-target="#categoryModal" data-url="@Url.Action("Edit","Categories", new { id = c.CategoryId })">Edit</a>
+                        <a class="btn btn-sm btn-outline-danger open-category-modal" data-bs-toggle="modal" data-bs-target="#categoryModal" data-url="@Url.Action("Delete","Categories", new { id = c.CategoryId })">Delete</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+

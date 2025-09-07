@@ -72,6 +72,7 @@ namespace ExpenseTracker.Web.Services
         {
             try
             {
+                expense.IsActive = true;
                 return await _repository.CreateAsync(expense);
             }
             catch (Exception ex)

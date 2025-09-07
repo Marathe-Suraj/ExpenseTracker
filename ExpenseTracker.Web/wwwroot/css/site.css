@@ -43,3 +43,21 @@ body {
   background-color: rgba(255, 255, 255, 0.08);
   color: #fff;
 }
+
+/* Inline loader helper */
+.inline-loader{
+  display:flex;align-items:center;justify-content:center;padding:2rem;
+}
+
+/* Modal dark mode fixes */
+[data-bs-theme="dark"] .modal-content {
+  background-color: #1f1f1f;
+  color: #eaeaea;
+  border-color: rgba(255,255,255,.12);
+}
+[data-bs-theme="dark"] .modal-header,
+[data-bs-theme="dark"] .modal-footer {
+  border-color: rgba(255,255,255,.12);
+}
+[data-bs-theme="dark"] .modal-backdrop.show { opacity: .6; }
+[data-bs-theme="dark"] .btn-close { filter: invert(1) grayscale(100%) brightness(180%); }

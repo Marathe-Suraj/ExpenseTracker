@@ -1,0 +1,77 @@
+@model IEnumerable<ExpenseTracker.Web.Models.Expense>
+@using ExpenseTracker.Web.ViewModels
+@{
+    var paged = (PagedResult<ExpenseTracker.Web.Models.Expense>)ViewBag.Paged;
+    var filter = (ExpenseFilterViewModel)ViewBag.Filter;
+}
+
+<div class="d-none d-md-block">
+    <div class="card card-neo">
+        <div class="table-responsive">
+            <table id="expensesTable" class="table table-hover align-middle mb-0 table-modern">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th class="text-end">Amount</th>
+                        <th>Description</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in Model)
+                    {
+                        <tr>
+                            <td>@e.ExpenseDate.ToString("dd-MM-yyyy")</td>
+                            <td>@(((IDictionary<int, string>)ViewBag.CatLookup)[e.CategoryId])</td>
+                            <td class="text-end">@e.Amount.ToString("C2")</td>
+                            <td>@e.Description</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary open-expense-modal" data-bs-toggle="modal" data-bs-target="#expenseModal" data-url="@Url.Action("Edit","Expenses", new { id = e.ExpenseId })">Edit</a>
+                                <a class="btn btn-sm btn-outline-danger open-expense-modal" data-bs-toggle="modal" data-bs-target="#expenseModal" data-url="@Url.Action("Delete","Expenses", new { id = e.ExpenseId })">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="d-md-none">
+    <div class="row g-3">
+        @foreach (var e in Model)
+        {
+            <div class="col-12">
+                <div class="card card-neo">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="fw-semibold"><i class="bi bi-receipt-cutoff me-1"></i>@e.Description</div>
+                                <div class="text-muted small"><i class="bi bi-calendar3 me-1"></i>@e.ExpenseDate.ToString("dd-MM-yyyy") • <i class="bi bi-bookmark me-1"></i>@(((IDictionary<int, string>)ViewBag.CatLookup)[e.CategoryId])</div>
+                            </div>
+                            <div class="fw-bold">@e.Amount.ToString("C2")</div>
+                        </div>
+                        <div class="mt-2 text-end">
+                            <a class="btn btn-sm btn-outline-primary open-expense-modal" data-bs-toggle="modal" data-bs-target="#expenseModal" data-url="@Url.Action("Edit","Expenses", new { id = e.ExpenseId })">Edit</a>
+                            <a class="btn btn-sm btn-outline-danger open-expense-modal" data-bs-toggle="modal" data-bs-target="#expenseModal" data-url="@Url.Action("Delete","Expenses", new { id = e.ExpenseId })">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<nav id="serverPagination" aria-label="Page navigation" class="mt-3">
+    <ul class="pagination">
+        @for (int p = 1; p <= paged.TotalPages; p++)
+        {
+            <li class="page-item @(p == paged.Page ? "active" : "")">
+                <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-pageSize="@paged.PageSize" asp-route-search="@filter.Search" asp-route-categoryId="@filter.CategoryId" asp-route-fromDate="@filter.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@filter.ToDate?.ToString("yyyy-MM-dd")">@p</a>
+            </li>
+        }
+    </ul>
+</nav>
+
+

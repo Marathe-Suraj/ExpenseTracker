@@ -18,6 +18,11 @@ namespace ExpenseTracker.Web.Controllers
             _authService = authService;
         }
 
+        private bool IsAjaxRequest()
+        {
+            return string.Equals(Request?.Headers["X-Requested-With"], "XMLHttpRequest", System.StringComparison.OrdinalIgnoreCase);
+        }
+
         public async Task<IActionResult> Index()
         {
             var userId = _authService.GetCurrentUserId()!.Value;
@@ -25,17 +30,34 @@ namespace ExpenseTracker.Web.Controllers
             return View(categories);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> List()
+        {
+            var userId = _authService.GetCurrentUserId()!.Value;
+            var categories = await _categoryService.GetAllAsync(userId);
+            return PartialView("_CategoryList", categories);
+        }
+
         public IActionResult Create()
         {
-            return View(new Category { IsActive = true });
+            var model = new Category { IsActive = true };
+            if (IsAjaxRequest()) return PartialView("_CreateEditModal", model);
+            return View(model);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(Category model)
         {
-            if (!ModelState.IsValid) return View(model);
+            // Force new records to active
+            model.IsActive = true;
+            if (!ModelState.IsValid)
+            {
+                if (IsAjaxRequest()) return PartialView("_CreateEditModal", model);
+                return View(model);
+            }
             model.CreatedDate = System.DateTime.UtcNow;
             await _categoryService.CreateAsync(model);
+            if (IsAjaxRequest()) return Json(new { success = true });
             return RedirectToAction(nameof(Index));
         }
 
@@ -44,14 +66,22 @@ namespace ExpenseTracker.Web.Controllers
             var userId = _authService.GetCurrentUserId()!.Value;
             var category = await _categoryService.GetAsync(userId, id);
             if (category == null) return NotFound();
+            if (IsAjaxRequest()) return PartialView("_CreateEditModal", category);
             return View(category);
         }
 
         [HttpPost]
         public async Task<IActionResult> Edit(Category model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                if (IsAjaxRequest()) return PartialView("_CreateEditModal", model);
+                return View(model);
+            }
+            // Editing should not deactivate
+            model.IsActive = true;
             await _categoryService.UpdateAsync(model);
+            if (IsAjaxRequest()) return Json(new { success = true });
             return RedirectToAction(nameof(Index));
         }
 
@@ -60,6 +90,7 @@ namespace ExpenseTracker.Web.Controllers
             var userId = _authService.GetCurrentUserId()!.Value;
             var category = await _categoryService.GetAsync(userId, id);
             if (category == null) return NotFound();
+            if (IsAjaxRequest()) return PartialView("_DeleteModal", category);
             return View(category);
         }
 
@@ -68,6 +99,7 @@ namespace ExpenseTracker.Web.Controllers
         {
             var userId = _authService.GetCurrentUserId()!.Value;
             await _categoryService.DeleteAsync(userId, id);
+            if (IsAjaxRequest()) return Json(new { success = true });
             return RedirectToAction(nameof(Index));
         }
     }

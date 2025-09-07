@@ -71,6 +71,11 @@
                 </div>
                 <div class="chart-container">
                     <canvas id="pieDaily"></canvas>
+                    <div id="pieDailyEmpty" class="d-none text-center text-muted py-5">
+                        <i class="bi bi-pie-chart-fill fs-1 mb-3 opacity-50"></i>
+                        <div class="fw-semibold">No expenses today</div>
+                        <div class="small">Start tracking your daily spending</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -84,6 +89,11 @@
                 </div>
                 <div class="chart-container">
                     <canvas id="pieMonthly"></canvas>
+                    <div id="pieMonthlyEmpty" class="d-none text-center text-muted py-5">
+                        <i class="bi bi-graph-up fs-1 mb-3 opacity-50"></i>
+                        <div class="fw-semibold">No expenses this month</div>
+                        <div class="small">Add your first expense to see insights</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -97,6 +107,11 @@
                 </div>
                 <div class="chart-container">
                     <canvas id="pieYearly"></canvas>
+                    <div id="pieYearlyEmpty" class="d-none text-center text-muted py-5">
+                        <i class="bi bi-activity fs-1 mb-3 opacity-50"></i>
+                        <div class="fw-semibold">No expenses this year</div>
+                        <div class="small">Begin your expense tracking journey</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -123,7 +138,11 @@
                             @if (!Model.MonthlyCategoryTotals.Any())
                             {
                                 <tr>
-                                    <td colspan="2" class="text-center text-muted">No data</td>
+                                    <td colspan="2" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox fs-4 mb-2 d-block opacity-50"></i>
+                                        <div class="fw-semibold">No expenses this month</div>
+                                        <div class="small">Add expenses to see category breakdown</div>
+                                    </td>
                                 </tr>
                             }
                             else
@@ -157,7 +176,11 @@
                 <ul class="list-group list-group-flush">
                     @if (!Model.MonthlyCategoryTotals.Any())
                     {
-                        <li class="list-group-item text-muted">No data</li>
+                        <li class="list-group-item text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-4 mb-2 d-block opacity-50"></i>
+                            <div class="fw-semibold">No expenses this month</div>
+                            <div class="small">Add expenses to see detailed breakdown</div>
+                        </li>
                     }
                     else
                     {

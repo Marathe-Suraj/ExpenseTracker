@@ -57,6 +57,7 @@ namespace ExpenseTracker.Web.Services
         {
             try
             {
+                category.IsActive = true;
                 return await _repository.CreateAsync(category);
             }
             catch (Exception ex)
@@ -70,6 +71,7 @@ namespace ExpenseTracker.Web.Services
         {
             try
             {
+                category.IsActive = true;
                 return await _repository.UpdateAsync(category);
             }
             catch (Exception ex)

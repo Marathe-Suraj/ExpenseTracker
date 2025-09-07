@@ -14,45 +14,13 @@
             </div>
         </div>
         <div>
-            <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg me-1"></i>New Category</a>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal" data-url="@Url.Action("Create","Categories")"><i class="bi bi-plus-lg me-1"></i>New Category</button>
         </div>
     </div>
 </div>
-<div class="card card-neo">
-    <div class="table-responsive">
-        <table id="categoriesTable" class="table table-hover align-middle mb-0 table-modern">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Active</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var c in Model)
-            {
-                <tr>
-                    <td>@c.Name</td>
-                    <td>
-                        @if (c.IsActive)
-                        {
-                            <span class="pill-uptrend">Active</span>
-                        }
-                        else
-                        {
-                            <span class="pill-downtrend">Inactive</span>
-                        }
-                    </td>
-                    <td class="text-end">
-                        <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@c.CategoryId">Edit</a>
-                        <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@c.CategoryId">Delete</a>
-                    </td>
-                </tr>
-            }
-            </tbody>
-        </table>
+<div id="categoriesList" data-list-url="@Url.Action("List","Categories")">
+    @await Html.PartialAsync("_CategoryList", Model)
     </div>
-</div>
 
 @section Styles{
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
@@ -62,17 +30,26 @@
 @section Scripts{
     <script src="https://cdn.datatables.net/v/bs5/dt-2.1.5/datatables.min.js"></script>
     <script src="~/js/tables.js" asp-append-version="true"></script>
+    <script src="~/js/categories.js" asp-append-version="true"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function(){
-            if (window.initDataTable) {
-                window.initDataTable('#categoriesTable', {
-                    columnDefs: [
-                        { targets: 2, orderable: false, searchable: false, className: 'text-end' }
-                    ]
-                });
-            }
+            window.initializeCategoriesPage && window.initializeCategoriesPage();
         });
     </script>
 }
+
+<!-- Modal Host -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-body p-0 position-relative" id="categoryModalBody">
+                <div class="p-5 text-center text-muted" id="categoryModalLoader" style="display:none;">
+                    <div class="spinner-border text-primary mb-3" role="status"></div>
+                    <div>Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 

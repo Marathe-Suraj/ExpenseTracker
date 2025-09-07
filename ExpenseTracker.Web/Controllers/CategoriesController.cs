@@ -102,6 +102,24 @@ namespace ExpenseTracker.Web.Controllers
             if (IsAjaxRequest()) return Json(new { success = true });
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleStatus(int id)
+        {
+            var userId = _authService.GetCurrentUserId()!.Value;
+            var category = await _categoryService.ToggleStatusAsync(userId, id);
+            if (category == null) return NotFound();
+            
+            if (IsAjaxRequest()) 
+            {
+                return Json(new { 
+                    success = true, 
+                    isActive = category.IsActive,
+                    message = category.IsActive ? "Category activated successfully" : "Category deactivated successfully"
+                });
+            }
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
 

@@ -113,6 +113,24 @@ namespace ExpenseTracker.Web.Data.Repositories
                 throw;
             }
         }
+
+        public async Task<Category?> ToggleStatusAsync(int userId, int categoryId)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                var category = await connection.QueryFirstOrDefaultAsync<Category>(
+                    "dbo.usp_ToggleCategoryStatus",
+                    new { CategoryId = categoryId, UserId = userId },
+                    commandType: CommandType.StoredProcedure);
+                return category;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to toggle category status {CategoryId} for user {UserId}", categoryId, userId);
+                throw;
+            }
+        }
     }
 }
 

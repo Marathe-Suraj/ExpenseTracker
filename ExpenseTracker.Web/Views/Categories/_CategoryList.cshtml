@@ -50,9 +50,18 @@
                                 <button class="btn btn-sm btn-outline-primary open-category-modal" data-bs-toggle="modal" data-bs-target="#categoryModal" data-url="@Url.Action("Edit","Categories", new { id = c.CategoryId })" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger open-category-modal" data-bs-toggle="modal" data-bs-target="#categoryModal" data-url="@Url.Action("Delete","Categories", new { id = c.CategoryId })" title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                @if (c.IsActive)
+                                {
+                                    <button class="btn btn-sm btn-outline-warning toggle-category-status" data-category-id="@c.CategoryId" data-action="deactivate" title="Deactivate">
+                                        <i class="bi bi-pause-circle"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-outline-success toggle-category-status" data-category-id="@c.CategoryId" data-action="activate" title="Activate">
+                                        <i class="bi bi-play-circle"></i>
+                                    </button>
+                                }
                             </div>
                         </td>
                     </tr>
@@ -95,9 +104,18 @@
                     <button class="btn btn-sm btn-outline-primary open-category-modal" data-bs-toggle="modal" data-bs-target="#categoryModal" data-url="@Url.Action("Edit","Categories", new { id = c.CategoryId })">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-danger open-category-modal" data-bs-toggle="modal" data-bs-target="#categoryModal" data-url="@Url.Action("Delete","Categories", new { id = c.CategoryId })">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                    @if (c.IsActive)
+                    {
+                        <button class="btn btn-sm btn-outline-warning toggle-category-status" data-category-id="@c.CategoryId" data-action="deactivate" title="Deactivate">
+                            <i class="bi bi-pause-circle"></i>
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-sm btn-outline-success toggle-category-status" data-category-id="@c.CategoryId" data-action="activate" title="Activate">
+                            <i class="bi bi-play-circle"></i>
+                        </button>
+                    }
                 </div>
             </div>
         }

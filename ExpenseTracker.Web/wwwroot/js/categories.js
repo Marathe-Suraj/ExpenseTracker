@@ -60,6 +60,42 @@ window.initializeCategoriesPage = function(){
             $btn.prop('disabled', false).html(initial);
         });
     });
+
+    // Handle category status toggle
+    $(document).off('click', '.toggle-category-status').on('click', '.toggle-category-status', function(e){
+        e.preventDefault();
+        const $btn = $(this);
+        const categoryId = $btn.data('category-id');
+        const action = $btn.data('action');
+        const originalHtml = $btn.html();
+        
+        // Show loading state
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+        
+        $.ajax({
+            url: '/Categories/ToggleStatus',
+            type: 'POST',
+            data: { id: categoryId },
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }).done(function(resp){
+            if (resp && resp.success) {
+                // Show success message if available
+                if (resp.message) {
+                    // You can add a toast notification here if you have one
+                    console.log(resp.message);
+                }
+                // Refresh the categories list to show updated status
+                refreshCategoriesList();
+            } else {
+                alert('Failed to update category status. Please try again.');
+                $btn.prop('disabled', false).html(originalHtml);
+            }
+        }).fail(function(xhr){
+            const errorMsg = xhr.responseJSON?.message || 'An error occurred while updating category status.';
+            alert(errorMsg);
+            $btn.prop('disabled', false).html(originalHtml);
+        });
+    });
 }
 
 window.refreshCategoriesList = function(){

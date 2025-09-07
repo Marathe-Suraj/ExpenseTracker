@@ -1,34 +1,124 @@
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Create Account";
+    ViewData["AuthTitle"] = "Join ExpenseTracker";
+    ViewData["AuthSubtitle"] = "Start managing your finances today";
+    Layout = "_AuthCard";
 }
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h3 class="mb-3 text-center">Create account</h3>
-                <form method="post">
-                    <div class="mb-3">
-                        <label class="form-label">Username</label>
-                        <input name="username" class="form-control" required />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <input type="password" name="password" class="form-control" required />
-                    </div>
-                    <button class="btn btn-primary w-100">Register</button>
-                    <div class="text-center mt-3">
-                        <a asp-action="Login">Already have an account? Sign in</a>
-                    </div>
-                </form>
-                <div class="text-danger mt-2">
-                    @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+
+<form method="post" data-auth-form="register" class="auth-form">
+    @Html.AntiForgeryToken()
+    
+    <!-- Validation Summary -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger alert-modern" role="alert">
+            <div class="alert-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div class="alert-content">
+                <h6 class="alert-title">Please correct the following errors:</h6>
+                <ul class="mb-0">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
                     {
-                        <div>@err.ErrorMessage</div>
+                        <li>@error.ErrorMessage</li>
                     }
-                </div>
+                </ul>
             </div>
         </div>
+    }
+    
+    <div class="form-group">
+        <label for="username" class="form-label modern-label">
+            <i class="bi bi-person me-2"></i>
+            Username
+        </label>
+        <input type="text" 
+               id="username" 
+               name="username" 
+               class="form-control modern-input" 
+               autocomplete="username"
+               placeholder="Choose a unique username"
+               required />
+        <small class="form-text text-muted">
+            This will be your unique identifier for signing in
+        </small>
     </div>
-</div>
+    
+    <div class="form-group">
+        <label for="Password" class="form-label modern-label">
+            <i class="bi bi-lock me-2"></i>
+            Password
+        </label>
+        <div class="password-input-group">
+            <input type="password" 
+                   id="Password" 
+                   name="password" 
+                   class="form-control modern-input" 
+                   autocomplete="new-password"
+                   placeholder="Create a strong password"
+                   minlength="6"
+                   required />
+            <button type="button" 
+                    class="password-toggle" 
+                    data-password-toggle="Password"
+                    tabindex="0"
+                    aria-label="Show password"
+                    aria-pressed="false">
+                <svg class="toggle-icon" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                </svg>
+            </button>
+        </div>
+        <small class="form-text text-muted">
+            Minimum 6 characters required
+        </small>
+    </div>
+    
+    <div class="form-group">
+        <label for="ConfirmPassword" class="form-label modern-label">
+            <i class="bi bi-shield-check me-2"></i>
+            Confirm Password
+        </label>
+        <div class="password-input-group">
+            <input type="password" 
+                   id="ConfirmPassword" 
+                   name="confirmPassword" 
+                   class="form-control modern-input" 
+                   autocomplete="new-password"
+                   placeholder="Confirm your password"
+                   required />
+            <button type="button" 
+                    class="password-toggle" 
+                    data-password-toggle="ConfirmPassword"
+                    tabindex="0"
+                    aria-label="Show password"
+                    aria-pressed="false">
+                <svg class="toggle-icon" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                </svg>
+            </button>
+        </div>
+        <!-- Validation message container -->
+        <div class="validation-container"></div>
+        <small class="form-text text-muted">
+            Re-enter your password to confirm
+        </small>
+    </div>
+    
+    <button type="submit" class="btn btn-primary btn-modern w-100 auth-submit-btn">
+        <i class="bi bi-person-plus me-2"></i>
+        Create Account
+    </button>
+    
+    <div class="auth-links">
+        <div class="text-center">
+            <span class="text-muted">Already have an account?</span>
+            <a asp-action="Login" class="auth-link">Sign in here</a>
+        </div>
+    </div>
+</form>
+
 
 

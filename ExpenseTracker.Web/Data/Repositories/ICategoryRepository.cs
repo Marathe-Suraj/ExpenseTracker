@@ -11,6 +11,7 @@ namespace ExpenseTracker.Web.Data.Repositories
         Task<int> CreateAsync(Category category);
         Task<bool> UpdateAsync(Category category);
         Task<bool> DeleteAsync(int userId, int categoryId);
+        Task<Category?> ToggleStatusAsync(int userId, int categoryId);
     }
 }
 

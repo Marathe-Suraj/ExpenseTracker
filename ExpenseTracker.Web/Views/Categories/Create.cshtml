@@ -2,26 +2,41 @@
 @{
     ViewData["Title"] = "New Category";
 }
+<div class="dashboard-hero mb-3">
+    <div class="d-flex align-items-center">
+        <span class="icon d-inline-flex align-items-center justify-content-center me-3" style="width:48px;height:48px;border-radius:12px;background:rgba(13,110,253,.12);color:#0d6efd;">
+            <i class="bi bi-plus-square"></i>
+        </span>
+        <div>
+            <div class="fw-semibold text-uppercase small text-muted">Create</div>
+            <h5 class="mb-0">New Category</h5>
+        </div>
+    </div>
+</div>
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <div class="card shadow-sm">
+        <div class="card card-neo">
             <div class="card-body p-4">
-                <h3 class="mb-3">New Category</h3>
+                <h6 class="mb-3 text-muted">Enter category details</h6>
                 <form method="post">
                     <div class="mb-3">
                         <label class="form-label">Name</label>
-                        <input asp-for="Name" class="form-control" required />
+                        <input asp-for="Name" class="form-control" />
+                        <span class="text-danger" asp-validation-for="Name"></span>
                     </div>
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" asp-for="IsActive" />
-                        <label class="form-check-label" asp-for="IsActive">Active</label>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary"><i class="bi bi-check2-circle me-1"></i>Create</button>
+                        <a class="btn btn-link" asp-action="Index"><i class="bi bi-x-circle me-1"></i>Cancel</a>
                     </div>
-                    <button class="btn btn-primary">Create</button>
-                    <a class="btn btn-link" asp-action="Index">Cancel</a>
                 </form>
+                <partial name="_ValidationScriptsPartial" />
             </div>
         </div>
     </div>
 </div>
+
+@section Styles{
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+}
 
 

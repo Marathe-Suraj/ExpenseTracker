@@ -1,0 +1,88 @@
+@model ExpenseTracker.Web.Models.Expense
+@{
+    var isEdit = Model.ExpenseId > 0;
+    var formAction = isEdit ? "Edit" : "Create";
+}
+
+<div class="expense-modal">
+    <div class="expense-modal-header">
+        <div class="modal-icon">
+            <i class="bi bi-@(isEdit ? "pencil-square" : "plus-circle")"></i>
+        </div>
+        <div class="modal-title-section">
+            <h4 class="modal-title">@(isEdit ? "Edit Expense" : "Add New Expense")</h4>
+            <p class="modal-subtitle">@(isEdit ? "Update your expense details" : "Track your spending with detailed information")</p>
+        </div>
+        <button type="button" class="btn-close-modern" data-bs-dismiss="modal" aria-label="Close">
+            <i class="bi bi-x"></i>
+        </button>
+    </div>
+    
+    <div class="expense-modal-body">
+        <form method="post" asp-action="@formAction" id="expenseForm" class="expense-form">
+            @if (isEdit)
+            {
+                <input type="hidden" asp-for="ExpenseId" />
+            }
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="bi bi-calendar-event me-2"></i>
+                        Expense Date
+                    </label>
+                    <input type="date" class="form-control modern-input" asp-for="ExpenseDate" />
+                    <span class="text-danger validation-message" asp-validation-for="ExpenseDate"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="bi bi-tag me-2"></i>
+                        Category
+                    </label>
+                    <select class="form-select modern-select" asp-for="CategoryId" asp-items="ViewBag.Categories">
+                        <option value="">Select a category</option>
+                    </select>
+                    <span class="text-danger validation-message" asp-validation-for="CategoryId"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="bi bi-currency-rupee me-2"></i>
+                        Amount
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        <input type="number" step="0.01" min="0" class="form-control modern-input" asp-for="Amount" placeholder="0.00" />
+                    </div>
+                    <span class="text-danger validation-message" asp-validation-for="Amount"></span>
+                </div>
+                
+                <div class="form-group form-group-full">
+                    <label class="form-label">
+                        <i class="bi bi-card-text me-2"></i>
+                        Description
+                    </label>
+                    <textarea class="form-control modern-input" asp-for="Description" rows="3" placeholder="What did you spend on?"></textarea>
+                    <span class="text-danger validation-message" asp-validation-for="Description"></span>
+                </div>
+            </div>
+            
+            <div class="expense-modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary btn-modern">
+                    <i class="bi bi-@(isEdit ? "check2-circle" : "plus-circle") me-1"></i>
+                    @(isEdit ? "Update Expense" : "Add Expense")
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <partial name="_ValidationScriptsPartial" />
+</div>
+
+
+

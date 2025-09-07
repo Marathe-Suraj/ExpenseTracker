@@ -6,118 +6,192 @@
     var filter = (ExpenseFilterViewModel)ViewBag.Filter;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Expenses</h3>
-    <div>
-        <a class="btn btn-outline-secondary me-2" asp-action="ExportExcel" asp-route-search="@filter.Search" asp-route-categoryId="@filter.CategoryId" asp-route-fromDate="@filter.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@filter.ToDate?.ToString("yyyy-MM-dd")">Excel</a>
-        <a class="btn btn-outline-secondary me-2" asp-action="ExportPdf" asp-route-search="@filter.Search" asp-route-categoryId="@filter.CategoryId" asp-route-fromDate="@filter.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@filter.ToDate?.ToString("yyyy-MM-dd")">PDF</a>
-        <a class="btn btn-primary" asp-action="Create">New Expense</a>
+<div class="expense-hero mb-4 fade-in">
+    <div class="d-flex align-items-center justify-content-between flex-wrap">
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                <span class="hero-icon d-inline-flex align-items-center justify-content-center">
+                    <i class="bi bi-receipt-cutoff"></i>
+                </span>
+            </div>
+            <div>
+                <div class="hero-subtitle">Financial Management</div>
+                <h2 class="hero-title mb-0">Expense Tracker</h2>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="export-group d-none d-md-flex">
+                <a class="btn btn-outline-success btn-modern" asp-action="ExportExcel" asp-route-search="@filter.Search" asp-route-categoryId="@filter.CategoryId" asp-route-fromDate="@filter.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@filter.ToDate?.ToString("yyyy-MM-dd")">
+                    <i class="bi bi-file-earmark-excel me-1"></i>Excel
+                </a>
+                <a class="btn btn-outline-danger btn-modern" asp-action="ExportPdf" asp-route-search="@filter.Search" asp-route-categoryId="@filter.CategoryId" asp-route-fromDate="@filter.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@filter.ToDate?.ToString("yyyy-MM-dd")">
+                    <i class="bi bi-filetype-pdf me-1"></i>PDF
+                </a>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-modern d-md-none" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <i class="bi bi-box-arrow-up"></i>
+            </button>
+            <button type="button" class="btn btn-primary btn-modern" data-bs-toggle="modal" data-bs-target="#expenseModal" data-url="@Url.Action("Create","Expenses")">
+                <i class="bi bi-plus-lg me-1"></i>
+                <span class="d-none d-sm-inline">Add Expense</span>
+            </button>
+        </div>
+    </div>
+    <div class="hero-description mt-2">
+        Track, categorize, and analyze your expenses with powerful filtering and export capabilities.
     </div>
 </div>
 
-<form method="get" class="card shadow-sm mb-3 p-3">
-    <div class="row g-2 align-items-end">
-        <div class="col-md-4">
-            <label class="form-label">Search</label>
-            <input class="form-control" name="search" value="@filter.Search" placeholder="Description contains..." />
+<!-- Advanced Filter Panel -->
+<div class="filter-panel fade-in" data-delay="200">
+    <div class="filter-header">
+        <div class="filter-info">
+            <h5 class="filter-title">Filter & Search</h5>
+            <p class="filter-subtitle">Narrow down your expenses with advanced filters</p>
         </div>
-        <div class="col-md-3">
-            <label class="form-label">Category</label>
-            <select class="form-select" name="CategoryId" asp-items="filter.Categories">
-                <option value="">All</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">From</label>
-            <div class="input-group">
-                <input id="fromDate" type="date" class="form-control" name="FromDate" value="@filter.FromDate?.ToString("yyyy-MM-dd")" />
-                <button type="button" class="btn btn-outline-secondary" title="Clear" data-clear-target="#fromDate">&times;</button>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">To</label>
-            <div class="input-group">
-                <input id="toDate" type="date" class="form-control" name="ToDate" value="@filter.ToDate?.ToString("yyyy-MM-dd")" />
-                <button type="button" class="btn btn-outline-secondary" title="Clear" data-clear-target="#toDate">&times;</button>
-            </div>
-        </div>
-        <div class="col-md-1">
-            <button class="btn btn-secondary w-100">Go</button>
+        <div class="filter-toggle d-md-none">
+            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                <i class="bi bi-funnel me-1"></i>Filters
+            </button>
         </div>
     </div>
-</form>
-
-<div class="d-none d-md-block">
-    <div class="card shadow-sm">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Category</th>
-                        <th class="text-end">Amount</th>
-                        <th>Description</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var e in Model)
-                    {
-                        <tr>
-                            <td>@e.ExpenseDate.ToString("dd-MM-yyyy")</td>
-                            <td>@(((IDictionary<int, string>)ViewBag.CatLookup)[e.CategoryId])</td>
-                            <td class="text-end">@e.Amount.ToString("C2")</td>
-                            <td>@e.Description</td>
-                            <td class="text-end">
-                                <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@e.ExpenseId">Edit</a>
-                                <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@e.ExpenseId">Delete</a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<div class="d-md-none">
-    <div class="row g-3">
-        @foreach (var e in Model)
-        {
-            <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <div class="fw-semibold">@e.Description</div>
-                                <div class="text-muted small">@e.ExpenseDate.ToString("dd-MM-yyyy") • @(((IDictionary<int, string>)ViewBag.CatLookup)[e.CategoryId])</div>
-                            </div>
-                            <div class="fw-bold">@e.Amount.ToString("C2")</div>
-                        </div>
-                        <div class="mt-2 text-end">
-                            <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@e.ExpenseId">Edit</a>
-                            <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@e.ExpenseId">Delete</a>
+    
+    <div class="collapse d-md-block" id="filterCollapse">
+        <form method="get" id="filterForm" class="filter-form">
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-3">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-search me-1"></i>Search
+                        </label>
+                        <input type="text" class="form-control modern-input" name="Search" value="@filter.Search" placeholder="Description, amount..." />
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-tag me-1"></i>Category
+                        </label>
+                        <select class="form-select modern-select" name="CategoryId" asp-items="filter.Categories">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-2">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-calendar-event me-1"></i>From Date
+                        </label>
+                        <div class="input-group">
+                            <input id="fromDate" type="date" class="form-control modern-input" name="FromDate" value="@filter.FromDate?.ToString("yyyy-MM-dd")" />
+                            <button type="button" class="btn btn-outline-secondary clear-btn" title="Clear" data-clear-target="#fromDate">
+                                <i class="bi bi-x"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
+                <div class="col-md-6 col-lg-2">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-calendar-check me-1"></i>To Date
+                        </label>
+                        <div class="input-group">
+                            <input id="toDate" type="date" class="form-control modern-input" name="ToDate" value="@filter.ToDate?.ToString("yyyy-MM-dd")" />
+                            <button type="button" class="btn btn-outline-secondary clear-btn" title="Clear" data-clear-target="#toDate">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 d-flex align-items-end">
+                    <div class="form-group w-100">
+                        <button class="btn btn-primary btn-modern w-100" id="filterGoBtn">
+                            <i class="bi bi-search me-1"></i>Apply Filters
+                        </button>
+                    </div>
+                </div>
             </div>
-        }
+            
+            @if (!string.IsNullOrEmpty(filter.Search) || filter.CategoryId.HasValue || filter.FromDate.HasValue || filter.ToDate.HasValue)
+            {
+                <div class="filter-active mt-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="active-filters">
+                            <span class="badge bg-primary me-2">Filters Active</span>
+                            @if (!string.IsNullOrEmpty(filter.Search))
+                            {
+                                <span class="badge bg-secondary me-1">Search: "@filter.Search"</span>
+                            }
+                            @if (filter.CategoryId.HasValue)
+                            {
+                                <span class="badge bg-secondary me-1">Category</span>
+                            }
+                            @if (filter.FromDate.HasValue || filter.ToDate.HasValue)
+                            {
+                                <span class="badge bg-secondary me-1">Date Range</span>
+                            }
+                        </div>
+                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-x-circle me-1"></i>Clear All
+                        </a>
+                    </div>
+                </div>
+            }
+        </form>
     </div>
+</div>
+
+<div id="expensesList" data-list-url="@Url.Action("List","Expenses")">
+    @await Html.PartialAsync("_ExpenseList", Model)
+</div>
+
+
+<!-- Export Modal (mobile friendly) -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Export Expenses</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-grid gap-2">
+                <a class="btn btn-outline-secondary" asp-action="ExportExcel" asp-route-search="@filter.Search" asp-route-categoryId="@filter.CategoryId" asp-route-fromDate="@filter.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@filter.ToDate?.ToString("yyyy-MM-dd")"><i class="bi bi-file-earmark-excel me-1"></i> Excel</a>
+                <a class="btn btn-outline-secondary" asp-action="ExportPdf" asp-route-search="@filter.Search" asp-route-categoryId="@filter.CategoryId" asp-route-fromDate="@filter.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@filter.ToDate?.ToString("yyyy-MM-dd")"><i class="bi bi-filetype-pdf me-1"></i> PDF</a>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
     </div>
+</div>
 
-<nav aria-label="Page navigation" class="mt-3">
-    <ul class="pagination">
-        @for (int p = 1; p <= paged.TotalPages; p++)
-        {
-            <li class="page-item @(p == paged.Page ? "active" : "")">
-                <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-pageSize="@paged.PageSize" asp-route-search="@filter.Search" asp-route-categoryId="@filter.CategoryId" asp-route-fromDate="@filter.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@filter.ToDate?.ToString("yyyy-MM-dd")">@p</a>
-            </li>
-        }
-    </ul>
-</nav>
-
+@section Styles{
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/expenses.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/dt-2.1.5/datatables.min.css" />
+}
 
 @section Scripts{
-    <link rel="stylesheet" href="~/css/expenses.css" asp-append-version="true" />
+    <script src="https://cdn.datatables.net/v/bs5/dt-2.1.5/datatables.min.js"></script>
     <script src="~/js/expenses.js" asp-append-version="true"></script>
+    <script src="~/js/tables.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            window.initializeExpensesPage && window.initializeExpensesPage();
+        });
+    </script>
 }
+
+<!-- Modal Host -->
+<div class="modal fade" id="expenseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-body p-0 position-relative" id="expenseModalBody">
+                <div class="p-5 text-center text-muted" id="expenseModalLoader" style="display:none;">
+                    <div class="spinner-border text-primary mb-3" role="status"></div>
+                    <div>Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

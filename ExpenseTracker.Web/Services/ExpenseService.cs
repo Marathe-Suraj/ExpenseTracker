@@ -34,7 +34,47 @@ namespace ExpenseTracker.Web.Services
         {
             try
             {
-                var (items, total) = await _repository.SearchAsync(userId, filter.Search, filter.CategoryId, filter.FromDate, filter.ToDate, filter.Page, filter.PageSize);
+                // Apply quick filters
+                var fromDate = filter.FromDate;
+                var toDate = filter.ToDate;
+                
+                if (!string.IsNullOrEmpty(filter.QuickFilter))
+                {
+                    var now = DateTime.Today;
+                    switch (filter.QuickFilter.ToLower())
+                    {
+                        case "today":
+                            fromDate = now;
+                            toDate = now;
+                            break;
+                        case "week":
+                            fromDate = now.AddDays(-(int)now.DayOfWeek);
+                            toDate = fromDate.Value.AddDays(6);
+                            break;
+                        case "month":
+                            fromDate = new DateTime(now.Year, now.Month, 1);
+                            toDate = fromDate.Value.AddMonths(1).AddDays(-1);
+                            break;
+                        case "year":
+                            fromDate = new DateTime(now.Year, 1, 1);
+                            toDate = new DateTime(now.Year, 12, 31);
+                            break;
+                    }
+                }
+                
+                var (items, total) = await _repository.SearchAsync(
+                    userId, 
+                    filter.Search, 
+                    filter.CategoryId, 
+                    fromDate, 
+                    toDate, 
+                    filter.MinAmount, 
+                    filter.MaxAmount, 
+                    filter.SortBy, 
+                    filter.SortOrder, 
+                    filter.Page, 
+                    filter.PageSize);
+                    
                 return new PagedResult<Expense>
                 {
                     Items = items.ToList(),
@@ -67,6 +107,7 @@ namespace ExpenseTracker.Web.Services
         {
             try
             {
+                expense.IsActive = true;
                 return await _repository.CreateAsync(expense);
             }
             catch (Exception ex)

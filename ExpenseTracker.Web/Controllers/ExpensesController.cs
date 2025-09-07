@@ -27,9 +27,17 @@ namespace ExpenseTracker.Web.Controllers
             return new SelectList(items, nameof(Category.CategoryId), nameof(Category.Name));
         }
 
+        private bool IsAjaxRequest()
+        {
+            return string.Equals(Request?.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+        }
+
         public async Task<IActionResult> Index([FromQuery] ExpenseFilterViewModel filter)
         {
             var userId = _authService.GetCurrentUserId()!.Value;
+            // Load full dataset for client-side DataTables so all entries are available for paging/search
+            filter.Page = 1;
+            filter.PageSize = int.MaxValue;
             filter.Categories = await BuildCategoriesSelectList(userId);
             var result = await _expenseService.SearchAsync(userId, filter);
             ViewBag.Paged = result;
@@ -39,25 +47,56 @@ namespace ExpenseTracker.Web.Controllers
             return View(result.Items);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> List([FromQuery] ExpenseFilterViewModel filter)
+        {
+            var userId = _authService.GetCurrentUserId()!.Value;
+            filter.Page = 1;
+            filter.PageSize = int.MaxValue;
+            filter.Categories = await BuildCategoriesSelectList(userId);
+            var result = await _expenseService.SearchAsync(userId, filter);
+            ViewBag.Paged = result;
+            ViewBag.Filter = filter;
+            var cats = await _categoryService.GetAllAsync(userId);
+            ViewBag.CatLookup = cats.ToDictionary(c => c.CategoryId, c => c.Name);
+            return PartialView("_ExpenseList", result.Items);
+        }
+
         public async Task<IActionResult> Create()
         {
             var userId = _authService.GetCurrentUserId()!.Value;
             ViewBag.Categories = await BuildCategoriesSelectList(userId);
-            return View(new Expense { ExpenseDate = DateTime.Today, IsActive = true });
+            var model = new Expense { ExpenseDate = DateTime.Today, IsActive = true };
+            if (IsAjaxRequest())
+            {
+                return PartialView("_CreateEditModal", model);
+            }
+            return View(model);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(Expense model)
         {
             var userId = _authService.GetCurrentUserId()!.Value;
+            // Force new records to active
+            model.IsActive = true;
             if (!ModelState.IsValid)
             {
                 ViewBag.Categories = await BuildCategoriesSelectList(userId);
+                if (IsAjaxRequest()) return PartialView("_CreateEditModal", model);
+                return View(model);
+            }
+            if (model.Amount <= 0)
+            {
+                ModelState.AddModelError(nameof(model.Amount), "Amount must be greater than 0");
+                ViewBag.Categories = await BuildCategoriesSelectList(userId);
+                if (IsAjaxRequest()) return PartialView("_CreateEditModal", model);
                 return View(model);
             }
             model.UserId = userId;
             model.CreatedDate = DateTime.UtcNow;
             await _expenseService.CreateAsync(model);
+            if (IsAjaxRequest()) return Json(new { success = true });
             return RedirectToAction(nameof(Index));
         }
 
@@ -67,6 +106,7 @@ namespace ExpenseTracker.Web.Controllers
             var model = await _expenseService.GetAsync(userId, id);
             if (model == null) return NotFound();
             ViewBag.Categories = await BuildCategoriesSelectList(userId);
+            if (IsAjaxRequest()) return PartialView("_CreateEditModal", model);
             return View(model);
         }
 
@@ -77,10 +117,21 @@ namespace ExpenseTracker.Web.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.Categories = await BuildCategoriesSelectList(userId);
+                if (IsAjaxRequest()) return PartialView("_CreateEditModal", model);
+                return View(model);
+            }
+            if (model.Amount <= 0)
+            {
+                ModelState.AddModelError(nameof(model.Amount), "Amount must be greater than 0");
+                ViewBag.Categories = await BuildCategoriesSelectList(userId);
+                if (IsAjaxRequest()) return PartialView("_CreateEditModal", model);
                 return View(model);
             }
             model.UserId = userId;
+            // Preserve active state; editing should not deactivate
+            model.IsActive = true;
             await _expenseService.UpdateAsync(model);
+            if (IsAjaxRequest()) return Json(new { success = true });
             return RedirectToAction(nameof(Index));
         }
 
@@ -89,6 +140,7 @@ namespace ExpenseTracker.Web.Controllers
             var userId = _authService.GetCurrentUserId()!.Value;
             var model = await _expenseService.GetAsync(userId, id);
             if (model == null) return NotFound();
+            if (IsAjaxRequest()) return PartialView("_DeleteModal", model);
             return View(model);
         }
 
@@ -97,6 +149,7 @@ namespace ExpenseTracker.Web.Controllers
         {
             var userId = _authService.GetCurrentUserId()!.Value;
             await _expenseService.DeleteAsync(userId, id);
+            if (IsAjaxRequest()) return Json(new { success = true });
             return RedirectToAction(nameof(Index));
         }
 

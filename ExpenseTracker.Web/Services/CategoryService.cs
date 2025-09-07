@@ -14,6 +14,7 @@ namespace ExpenseTracker.Web.Services
         Task<int> CreateAsync(Category category);
         Task<bool> UpdateAsync(Category category);
         Task<bool> DeleteAsync(int userId, int id);
+        Task<Category?> ToggleStatusAsync(int userId, int categoryId);
     }
 
     public class CategoryService : ICategoryService
@@ -86,7 +87,7 @@ namespace ExpenseTracker.Web.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to update category {Id} for user {UserId}", category.CategoryId);
+                _logger.LogError(ex, "Failed to update category {Id}", category.CategoryId);
                 throw;
             }
         }
@@ -100,6 +101,19 @@ namespace ExpenseTracker.Web.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete category {Id} for user {UserId}", id, userId);
+                throw;
+            }
+        }
+
+        public async Task<Category?> ToggleStatusAsync(int userId, int categoryId)
+        {
+            try
+            {
+                return await _repository.ToggleStatusAsync(userId, categoryId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to toggle category status {CategoryId} for user {UserId}", categoryId, userId);
                 throw;
             }
         }

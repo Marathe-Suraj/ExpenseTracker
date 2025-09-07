@@ -1,0 +1,395 @@
+/* Page-specific Styles */
+
+/* Hero Sections */
+.settings-hero,
+.categories-hero,
+.profile-hero {
+    background: linear-gradient(135deg, rgba(13,110,253,.08), rgba(32,201,151,.06));
+    border: 1px solid rgba(108,117,125,.12);
+    border-radius: 1.25rem;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.settings-hero::before,
+.categories-hero::before,
+.profile-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,.02) 50%, transparent 70%);
+    pointer-events: none;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+.hero-subtitle {
+    color: var(--bs-secondary-color);
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Categories Table Card */
+.categories-table-card {
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(108,117,125,.1);
+    border-radius: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.categories-table-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,.12);
+}
+
+.categories-table-header {
+    background: rgba(108,117,125,.03);
+    border-bottom: 1px solid rgba(108,117,125,.08);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.categories-table-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.categories-table-title .bi {
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+.categories-table-body {
+    padding: 0;
+}
+
+/* Settings Page Styles */
+.settings-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.settings-section {
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(108,117,125,.1);
+    border-radius: 1.25rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,.08);
+}
+
+.settings-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.settings-section-title .bi {
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+.settings-card {
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(108,117,125,.1);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.settings-card:hover {
+    border-color: rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1);
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.settings-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-size: 1.1rem;
+}
+
+.settings-info {
+    flex: 1;
+}
+
+.settings-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    margin: 0 0 0.25rem 0;
+}
+
+.settings-subtitle {
+    color: var(--bs-secondary-color);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.settings-content {
+    padding-left: 56px;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(108,117,125,.08);
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-info {
+    flex: 1;
+}
+
+.setting-label {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.setting-description {
+    color: var(--bs-secondary-color);
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+.setting-control {
+    margin-left: 1rem;
+}
+
+.modern-select {
+    border-radius: 8px;
+    border: 2px solid rgba(108,117,125,.15);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    background: var(--bs-body-bg);
+    min-width: 150px;
+}
+
+.modern-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+}
+
+/* Profile Page Styles */
+.profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.profile-card {
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(108,117,125,.1);
+    border-radius: 1.25rem;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,.08);
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.profile-info {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.profile-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    margin-bottom: 0.5rem;
+}
+
+.profile-email {
+    color: var(--bs-secondary-color);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.profile-stat {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(108,117,125,.03);
+    border-radius: 12px;
+    border: 1px solid rgba(108,117,125,.08);
+}
+
+.profile-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 0.25rem;
+}
+
+.profile-stat-label {
+    color: var(--bs-secondary-color);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Dark Mode */
+[data-bs-theme="dark"] .settings-hero,
+[data-bs-theme="dark"] .categories-hero,
+[data-bs-theme="dark"] .profile-hero {
+    background: rgba(13,110,253,.15);
+    border-color: rgba(255,255,255,.08);
+}
+
+[data-bs-theme="dark"] .categories-table-card,
+[data-bs-theme="dark"] .settings-section,
+[data-bs-theme="dark"] .settings-card,
+[data-bs-theme="dark"] .profile-card {
+    background: #161b22;
+    border-color: rgba(255,255,255,.08);
+}
+
+[data-bs-theme="dark"] .categories-table-header {
+    background: rgba(255,255,255,.02);
+    border-color: rgba(255,255,255,.08);
+}
+
+[data-bs-theme="dark"] .setting-item {
+    border-color: rgba(255,255,255,.08);
+}
+
+[data-bs-theme="dark"] .modern-select {
+    background: #21262d;
+    border-color: rgba(255,255,255,.15);
+    color: #eaeaea;
+}
+
+[data-bs-theme="dark"] .modern-select:focus {
+    background: #21262d;
+    border-color: #8b9dc3;
+    box-shadow: 0 0 0 0.2rem rgba(139, 157, 195, 0.15);
+}
+
+[data-bs-theme="dark"] .profile-stat {
+    background: rgba(255,255,255,.02);
+    border-color: rgba(255,255,255,.08);
+}
+
+[data-bs-theme="dark"] .hero-title {
+    background: linear-gradient(135deg, #8b9dc3 0%, #9b8db8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .settings-hero,
+    .categories-hero,
+    .profile-hero {
+        padding: 1.5rem;
+    }
+    
+    .hero-title {
+        font-size: 1.5rem;
+    }
+    
+    .categories-table-header {
+        padding: 1rem 1.5rem;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .settings-section,
+    .settings-card,
+    .profile-card {
+        padding: 1.5rem;
+    }
+    
+    .settings-content {
+        padding-left: 0;
+        margin-top: 1rem;
+    }
+    
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .setting-control {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .modern-select {
+        width: 100%;
+    }
+    
+    .profile-stats {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Data;
@@ -93,7 +94,7 @@ namespace ExpenseTracker.Web.Data.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to update category {CategoryId} for user {UserId}", category.CategoryId);
+                _logger.LogError(ex, "Failed to update category {CategoryId}", category.CategoryId);
                 throw;
             }
         }
@@ -112,6 +113,24 @@ namespace ExpenseTracker.Web.Data.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete category {CategoryId} for user {UserId}", categoryId, userId);
+                throw;
+            }
+        }
+
+        public async Task<Category?> ToggleStatusAsync(int userId, int categoryId)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                var category = await connection.QueryFirstOrDefaultAsync<Category>(
+                    "dbo.usp_ToggleCategoryStatus",
+                    new { CategoryId = categoryId, UserId = userId },
+                    commandType: CommandType.StoredProcedure);
+                return category;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to toggle category status {CategoryId} for user {UserId}", categoryId, userId);
                 throw;
             }
         }

@@ -1,0 +1,247 @@
+@model IEnumerable<ExpenseTracker.Web.Models.Category>
+
+<!-- Desktop Table View -->
+<div class="d-none d-md-block">
+    <div class="categories-table-card">
+        <div class="table-header">
+            <div class="table-info">
+                <h6 class="table-title">Category Management</h6>
+                <p class="table-subtitle">@Model.Count() categories found</p>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table id="categoriesTable" class="table table-hover align-middle mb-0 modern-table">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-tag me-1"></i>Category Name</th>
+                        <th><i class="bi bi-check-circle me-1"></i>Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr class="category-row">
+                        <td>
+                            <div class="category-name-cell">
+                                <div class="category-icon">
+                                    <i class="bi bi-tag-fill"></i>
+                                </div>
+                                <span class="category-name">@c.Name</span>
+                            </div>
+                        </td>
+                        <td>
+                            @if (c.IsActive)
+                            {
+                                <span class="status-badge status-active">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-inactive">
+                                    <i class="bi bi-x-circle-fill me-1"></i>Inactive
+                                </span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-primary open-category-modal" data-bs-toggle="modal" data-bs-target="#categoryModal" data-url="@Url.Action("Edit","Categories", new { id = c.CategoryId })" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                @if (c.IsActive)
+                                {
+                                    <button class="btn btn-sm btn-outline-warning toggle-category-status" data-category-id="@c.CategoryId" data-action="deactivate" title="Deactivate">
+                                        <i class="bi bi-pause-circle"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-outline-success toggle-category-status" data-category-id="@c.CategoryId" data-action="activate" title="Activate">
+                                        <i class="bi bi-play-circle"></i>
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Card View -->
+<div class="d-md-none">
+    <div class="mobile-category-list">
+        @foreach (var c in Model)
+        {
+            <div class="mobile-category-item">
+                <div class="mobile-category-main">
+                    <div class="mobile-category-info">
+                        <div class="mobile-category-name">
+                            <i class="bi bi-tag-fill me-2"></i>
+                            @c.Name
+                        </div>
+                        <div class="mobile-category-status">
+                            @if (c.IsActive)
+                            {
+                                <span class="status-badge status-active">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-inactive">
+                                    <i class="bi bi-x-circle-fill me-1"></i>Inactive
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="mobile-category-actions">
+                    <button class="btn btn-sm btn-outline-primary open-category-modal" data-bs-toggle="modal" data-bs-target="#categoryModal" data-url="@Url.Action("Edit","Categories", new { id = c.CategoryId })">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    @if (c.IsActive)
+                    {
+                        <button class="btn btn-sm btn-outline-warning toggle-category-status" data-category-id="@c.CategoryId" data-action="deactivate" title="Deactivate">
+                            <i class="bi bi-pause-circle"></i>
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-sm btn-outline-success toggle-category-status" data-category-id="@c.CategoryId" data-action="activate" title="Activate">
+                            <i class="bi bi-play-circle"></i>
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+/* Categories Table Card */
+.categories-table-card {
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(108,117,125,.1);
+    border-radius: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,.06);
+}
+
+.category-row {
+    transition: all 0.2s ease;
+}
+
+.category-row:hover {
+    background: rgba(102, 126, 234, 0.04);
+    transform: translateX(2px);
+}
+
+.category-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.category-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+.category-name {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: rgba(25, 135, 84, 0.1);
+    color: #198754;
+}
+
+.status-inactive {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+/* Mobile Category List */
+.mobile-category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.mobile-category-item {
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(108,117,125,.1);
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+
+.mobile-category-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.mobile-category-info {
+    flex: 1;
+}
+
+.mobile-category-name {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.mobile-category-name i {
+    color: #667eea;
+}
+
+.mobile-category-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+/* Dark mode */
+[data-bs-theme="dark"] .categories-table-card,
+[data-bs-theme="dark"] .mobile-category-item {
+    background-color: #1a1a1a;
+    border-color: rgba(255,255,255,.08);
+}
+
+[data-bs-theme="dark"] .category-row:hover {
+    background-color: rgba(255,255,255,.04);
+}
+
+[data-bs-theme="dark"] .table-header {
+    background: rgba(255,255,255,.02);
+    border-color: rgba(255,255,255,.08);
+}
+</style>
+
+

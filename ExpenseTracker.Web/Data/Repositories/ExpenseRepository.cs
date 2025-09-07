@@ -29,13 +29,13 @@ namespace ExpenseTracker.Web.Data.Repositories
                     "dbo.usp_CreateExpenses",
                     new
                     {
-                        expense.UserId,
-                        expense.CategoryId,
-                        expense.Amount,
-                        expense.Description,
-                        expense.ExpenseDate,
-                        expense.CreatedDate,
-                        expense.IsActive
+                        UserId = expense.UserId,
+                        CategoryId = expense.CategoryId,
+                        Amount = expense.Amount,
+                        Description = expense.Description,
+                        ExpenseDate = expense.ExpenseDate,
+                        CreatedDate = expense.CreatedDate,
+                        IsActive = expense.IsActive
                     },
                     commandType: CommandType.StoredProcedure);
             }
@@ -55,13 +55,13 @@ namespace ExpenseTracker.Web.Data.Repositories
                     "dbo.usp_UpdateExpenses",
                     new
                     {
-                        expense.ExpenseId,
-                        expense.UserId,
-                        expense.CategoryId,
-                        expense.Amount,
-                        expense.Description,
-                        expense.ExpenseDate,
-                        expense.IsActive
+                        ExpenseId = expense.ExpenseId,
+                        UserId = expense.UserId,
+                        CategoryId = expense.CategoryId,
+                        Amount = expense.Amount,
+                        Description = expense.Description,
+                        ExpenseDate = expense.ExpenseDate,
+                        IsActive = expense.IsActive
                     },
                     commandType: CommandType.StoredProcedure);
                 return rows > 0;
@@ -108,7 +108,7 @@ namespace ExpenseTracker.Web.Data.Repositories
             }
         }
 
-        public async Task<(IEnumerable<Expense> Items, int TotalCount)> SearchAsync(int userId, string? search, int? categoryId, DateTime? fromDate, DateTime? toDate, int page, int pageSize)
+        public async Task<(IEnumerable<Expense> Items, int TotalCount)> SearchAsync(int userId, string? search, int? categoryId, DateTime? fromDate, DateTime? toDate, decimal? minAmount, decimal? maxAmount, string sortBy, string sortOrder, int page, int pageSize)
         {
             try
             {
@@ -120,6 +120,10 @@ namespace ExpenseTracker.Web.Data.Repositories
                     CategoryId = categoryId,
                     FromDate = fromDate,
                     ToDate = toDate,
+                    MinAmount = minAmount,
+                    MaxAmount = maxAmount,
+                    SortBy = sortBy ?? "ExpenseDate",
+                    SortOrder = sortOrder ?? "desc",
                     Offset = (page - 1) * pageSize,
                     PageSize = pageSize
                 };

@@ -18,6 +18,11 @@ namespace ExpenseTracker.Web.Controllers
             _authService = authService;
         }
 
+        private bool IsAjaxRequest()
+        {
+            return string.Equals(Request?.Headers["X-Requested-With"], "XMLHttpRequest", System.StringComparison.OrdinalIgnoreCase);
+        }
+
         public async Task<IActionResult> Index()
         {
             var userId = _authService.GetCurrentUserId()!.Value;
@@ -25,9 +30,19 @@ namespace ExpenseTracker.Web.Controllers
             return View(categories);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> List()
+        {
+            var userId = _authService.GetCurrentUserId()!.Value;
+            var categories = await _categoryService.GetAllAsync(userId);
+            return PartialView("_CategoryList", categories);
+        }
+
         public IActionResult Create()
         {
-            return View(new Category { IsActive = true });
+            var model = new Category { IsActive = true };
+            if (IsAjaxRequest()) return PartialView("_CreateEditModal", model);
+            return View(model);
         }
 
         [HttpPost]
@@ -45,6 +60,7 @@ namespace ExpenseTracker.Web.Controllers
             }
             model.CreatedDate = System.DateTime.UtcNow;
             await _categoryService.CreateAsync(model);
+            if (IsAjaxRequest()) return Json(new { success = true });
             return RedirectToAction(nameof(Index));
         }
 
@@ -53,6 +69,7 @@ namespace ExpenseTracker.Web.Controllers
             var userId = _authService.GetCurrentUserId()!.Value;
             var category = await _categoryService.GetAsync(userId, id);
             if (category == null) return NotFound();
+            if (IsAjaxRequest()) return PartialView("_CreateEditModal", category);
             return View(category);
         }
 
@@ -70,6 +87,7 @@ namespace ExpenseTracker.Web.Controllers
             // Editing should not deactivate
             model.IsActive = true;
             await _categoryService.UpdateAsync(model);
+            if (IsAjaxRequest()) return Json(new { success = true });
             return RedirectToAction(nameof(Index));
         }
 
@@ -78,6 +96,7 @@ namespace ExpenseTracker.Web.Controllers
             var userId = _authService.GetCurrentUserId()!.Value;
             var category = await _categoryService.GetAsync(userId, id);
             if (category == null) return NotFound();
+            if (IsAjaxRequest()) return PartialView("_DeleteModal", category);
             return View(category);
         }
 
@@ -86,6 +105,25 @@ namespace ExpenseTracker.Web.Controllers
         {
             var userId = _authService.GetCurrentUserId()!.Value;
             await _categoryService.DeleteAsync(userId, id);
+            if (IsAjaxRequest()) return Json(new { success = true });
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleStatus(int id)
+        {
+            var userId = _authService.GetCurrentUserId()!.Value;
+            var category = await _categoryService.ToggleStatusAsync(userId, id);
+            if (category == null) return NotFound();
+            
+            if (IsAjaxRequest()) 
+            {
+                return Json(new { 
+                    success = true, 
+                    isActive = category.IsActive,
+                    message = category.IsActive ? "Category activated successfully" : "Category deactivated successfully"
+                });
+            }
             return RedirectToAction(nameof(Index));
         }
     }

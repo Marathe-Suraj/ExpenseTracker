@@ -25,6 +25,7 @@ namespace ExpenseTracker.Web.Data.Repositories
                 using var connection = _connectionFactory.CreateConnection();
                 return await connection.QueryAsync<Category>(
                     "dbo.usp_GetCategories",
+                    new { UserId = userId },
                     commandType: CommandType.StoredProcedure);
             }
             catch (Exception ex)
@@ -41,7 +42,7 @@ namespace ExpenseTracker.Web.Data.Repositories
                 using var connection = _connectionFactory.CreateConnection();
                 return await connection.QueryFirstOrDefaultAsync<Category>(
                     "dbo.usp_GetCategoryById",
-                    new { CategoryId = categoryId },
+                    new { CategoryId = categoryId, UserId = userId },
                     commandType: CommandType.StoredProcedure);
             }
             catch (Exception ex)
@@ -58,7 +59,12 @@ namespace ExpenseTracker.Web.Data.Repositories
                 using var connection = _connectionFactory.CreateConnection();
                 var id = await connection.ExecuteScalarAsync<int>(
                     "dbo.usp_CreateCategory",
-                    new { category.Name, category.CreatedDate, category.IsActive },
+                    new { 
+                        Name = category.Name, 
+                        CreatedDate = category.CreatedDate, 
+                        UserId = category.UserId, // Add UserId for user-category mapping
+                        IsActive = category.IsActive 
+                    },
                     commandType: CommandType.StoredProcedure);
                 return id;
             }
@@ -76,7 +82,12 @@ namespace ExpenseTracker.Web.Data.Repositories
                 using var connection = _connectionFactory.CreateConnection();
                 var rows = await connection.ExecuteScalarAsync<int>(
                     "dbo.usp_UpdateCategory",
-                    new { category.CategoryId, category.Name, category.IsActive },
+                    new { 
+                        CategoryId = category.CategoryId, 
+                        Name = category.Name, 
+                        UserId = category.UserId, // Add UserId for user-category mapping
+                        IsActive = category.IsActive 
+                    },
                     commandType: CommandType.StoredProcedure);
                 return rows > 0;
             }
@@ -94,7 +105,7 @@ namespace ExpenseTracker.Web.Data.Repositories
                 using var connection = _connectionFactory.CreateConnection();
                 var rows = await connection.ExecuteScalarAsync<int>(
                     "dbo.usp_DeleteCategory",
-                    new { CategoryId = categoryId },
+                    new { CategoryId = categoryId, UserId = userId },
                     commandType: CommandType.StoredProcedure);
                 return rows > 0;
             }

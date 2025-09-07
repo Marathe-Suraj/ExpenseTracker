@@ -57,6 +57,12 @@ namespace ExpenseTracker.Web.Services
         {
             try
             {
+                category.IsActive = true;
+                // Ensure UserId is set for the category
+                if (category.UserId <= 0)
+                {
+                    throw new ArgumentException("UserId must be provided for category creation");
+                }
                 return await _repository.CreateAsync(category);
             }
             catch (Exception ex)
@@ -70,6 +76,12 @@ namespace ExpenseTracker.Web.Services
         {
             try
             {
+                // Ensure UserId is set for the category
+                if (category.UserId <= 0)
+                {
+                    throw new ArgumentException("UserId must be provided for category update");
+                }
+                category.IsActive = true;
                 return await _repository.UpdateAsync(category);
             }
             catch (Exception ex)

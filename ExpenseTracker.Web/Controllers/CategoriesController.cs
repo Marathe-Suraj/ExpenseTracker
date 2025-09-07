@@ -33,7 +33,16 @@ namespace ExpenseTracker.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(Category model)
         {
-            if (!ModelState.IsValid) return View(model);
+            // Set user context for user-category mapping
+            var userId = _authService.GetCurrentUserId()!.Value;
+            model.UserId = userId;
+            // Force new records to active
+            model.IsActive = true;
+            if (!ModelState.IsValid)
+            {
+                if (IsAjaxRequest()) return PartialView("_CreateEditModal", model);
+                return View(model);
+            }
             model.CreatedDate = System.DateTime.UtcNow;
             await _categoryService.CreateAsync(model);
             return RedirectToAction(nameof(Index));
@@ -50,7 +59,16 @@ namespace ExpenseTracker.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(Category model)
         {
-            if (!ModelState.IsValid) return View(model);
+            // Set user context for user-category mapping
+            var userId = _authService.GetCurrentUserId()!.Value;
+            model.UserId = userId;
+            if (!ModelState.IsValid)
+            {
+                if (IsAjaxRequest()) return PartialView("_CreateEditModal", model);
+                return View(model);
+            }
+            // Editing should not deactivate
+            model.IsActive = true;
             await _categoryService.UpdateAsync(model);
             return RedirectToAction(nameof(Index));
         }

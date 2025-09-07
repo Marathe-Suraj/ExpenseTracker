@@ -64,6 +64,90 @@ namespace ExpenseTracker.Web.Controllers
             await _authService.LogoutAsync();
             return RedirectToAction("Login");
         }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult Profile()
+        {
+            var userId = _authService.GetCurrentUserId();
+            if (!userId.HasValue)
+                return RedirectToAction("Login");
+            
+            // For now, we'll use mock data. In a real app, you'd fetch from database
+            var model = new ProfileViewModel
+            {
+                Username = User.Identity?.Name ?? "User",
+                Email = "user@example.com",
+                FullName = "John Doe",
+                JoinDate = DateTime.Now.AddMonths(-6)
+            };
+            
+            return View(model);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public IActionResult Profile(ProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Here you would update the user profile in the database
+            // For now, we'll just show a success message
+            TempData["SuccessMessage"] = "Profile updated successfully!";
+            return RedirectToAction("Profile");
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult Settings()
+        {
+            var model = new SettingsViewModel
+            {
+                EmailNotifications = true,
+                DarkMode = false,
+                Currency = "USD",
+                DateFormat = "MM/dd/yyyy",
+                Language = "English"
+            };
+            
+            return View(model);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public IActionResult Settings(SettingsViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Here you would save the settings to the database
+            TempData["SuccessMessage"] = "Settings saved successfully!";
+            return RedirectToAction("Settings");
+        }
+    }
+
+    public class ProfileViewModel
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public DateTime JoinDate { get; set; }
+    }
+
+    public class SettingsViewModel
+    {
+        public bool EmailNotifications { get; set; }
+        public bool DarkMode { get; set; }
+        public string Currency { get; set; } = "USD";
+        public string DateFormat { get; set; } = "MM/dd/yyyy";
+        public string Language { get; set; } = "English";
     }
 }
 

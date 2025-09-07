@@ -1,4 +1,11 @@
+using System.Globalization;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure culture for Indian Rupee
+var cultureInfo = new CultureInfo("en-IN");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 // Add services to the container.
 var mvcBuilder = builder.Services.AddControllersWithViews();
@@ -6,6 +13,16 @@ if (builder.Environment.IsDevelopment())
 {
     mvcBuilder.AddRazorRuntimeCompilation();
 }
+
+// Add localization services
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { cultureInfo };
+    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(cultureInfo);
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
+
 builder.Services.AddHttpContextAccessor();
 
 // Cookie Authentication
@@ -48,6 +65,9 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
 }
 app.UseStaticFiles();
+
+// Use localization
+app.UseRequestLocalization();
 
 app.UseRouting();
 

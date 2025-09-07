@@ -1,39 +1,313 @@
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Sign In";
+    ViewData["AuthTitle"] = "Welcome Back";
+    ViewData["AuthSubtitle"] = "Sign in to manage your expenses";
+    Layout = "_AuthCard";
 }
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h3 class="mb-3 text-center">Sign in</h3>
-                <form method="post">
-                    @Html.AntiForgeryToken()
-                    <div class="mb-3">
-                        <label class="form-label">Username</label>
-                        <input name="username" class="form-control" required />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <input type="password" name="password" class="form-control" required />
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="rememberMe" name="rememberMe" />
-                        <label class="form-check-label" for="rememberMe">Remember me</label>
-                    </div>
-                    <button class="btn btn-primary w-100">Login</button>
-                    <div class="text-center mt-3">
-                        <a asp-action="Register">Create an account</a>
-                    </div>
-                </form>
-                <div class="text-danger mt-2">
-                    @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+
+<form method="post" data-auth-form="login" class="auth-form">
+    @Html.AntiForgeryToken()
+    
+    <!-- Validation Summary -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger alert-modern" role="alert">
+            <div class="alert-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div class="alert-content">
+                <h6 class="alert-title">Please correct the following errors:</h6>
+                <ul class="mb-0">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
                     {
-                        <div>@err.ErrorMessage</div>
+                        <li>@error.ErrorMessage</li>
                     }
-                </div>
+                </ul>
             </div>
         </div>
+    }
+    
+    <div class="form-group">
+        <label for="username" class="form-label modern-label">
+            <i class="bi bi-person me-2"></i>
+            Username or Email
+        </label>
+        <input type="text" 
+               id="username" 
+               name="username" 
+               class="form-control modern-input" 
+               autocomplete="username"
+               placeholder="Enter your username or email"
+               required />
     </div>
+    
+    <div class="form-group">
+        <label for="password" class="form-label modern-label">
+            <i class="bi bi-lock me-2"></i>
+            Password
+        </label>
+        <div class="password-input-group">
+            <input type="password" 
+                   id="password" 
+                   name="password" 
+                   class="form-control modern-input" 
+                   autocomplete="current-password"
+                   placeholder="Enter your password"
+                   required />
+            <button type="button" 
+                    class="password-toggle" 
+                    data-password-toggle="password"
+                    tabindex="0"
+                    aria-label="Show password"
+                    aria-pressed="false">
+                <svg class="toggle-icon" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                </svg>
+            </button>
+        </div>
     </div>
+    
+    <div class="form-group">
+        <div class="form-check modern-checkbox">
+            <input type="checkbox" 
+                   class="form-check-input" 
+                   id="rememberMe" 
+                   name="rememberMe" />
+            <label class="form-check-label" for="rememberMe">
+                Keep me signed in
+            </label>
+        </div>
+    </div>
+    
+    <button type="submit" class="btn btn-primary btn-modern w-100 auth-submit-btn">
+        <i class="bi bi-box-arrow-in-right me-2"></i>
+        Sign In
+    </button>
+    
+    <div class="auth-links">
+        <div class="text-center">
+            <span class="text-muted">Don't have an account?</span>
+            <a asp-action="Register" class="auth-link">Create one here</a>
+        </div>
+    </div>
+</form>
+
+<style>
+/* Auth Form Styles */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.modern-label {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+}
+
+.modern-label .bi {
+    color: var(--bs-secondary-color);
+    opacity: 0.7;
+}
+
+.modern-input {
+    border-radius: 12px;
+    border: 2px solid rgba(108,117,125,.15);
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background: var(--bs-body-bg);
+    min-height: 48px;
+}
+
+.modern-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    background: var(--bs-body-bg);
+}
+
+.modern-input::placeholder {
+    color: var(--bs-secondary-color);
+    opacity: 0.7;
+}
+
+.password-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-group .modern-input {
+    padding-right: 3.5rem; /* Add extra padding to prevent overlap with eye icon */
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    z-index: 10; /* Ensure eye icon stays above validation messages */
+}
+
+.password-toggle:hover {
+    background: rgba(108,117,125,.1);
+    color: var(--bs-emphasis-color);
+}
+
+.password-toggle:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.modern-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modern-checkbox .form-check-input {
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 4px;
+    border: 2px solid rgba(108,117,125,.3);
+    margin: 0;
+}
+
+.modern-checkbox .form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+.modern-checkbox .form-check-label {
+    font-size: 0.875rem;
+    color: var(--bs-secondary-color);
+    margin: 0;
+    cursor: pointer;
+}
+
+.auth-submit-btn {
+    margin-top: 0.5rem;
+    min-height: 48px;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.auth-links {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(108,117,125,.1);
+}
+
+.auth-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.auth-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+.alert-modern {
+    border-radius: 12px;
+    border: none;
+    padding: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.alert-modern.alert-danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: #842029;
+}
+
+.alert-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.alert-content ul {
+    font-size: 0.875rem;
+    padding-left: 1.25rem;
+}
+
+/* Dark Mode */
+[data-bs-theme="dark"] .modern-input {
+    background: #21262d;
+    border-color: rgba(255,255,255,.15);
+    color: #eaeaea;
+}
+
+[data-bs-theme="dark"] .modern-input:focus {
+    background: #21262d;
+    border-color: #8b9dc3;
+    box-shadow: 0 0 0 0.2rem rgba(139, 157, 195, 0.15);
+}
+
+[data-bs-theme="dark"] .modern-input::placeholder {
+    color: rgba(255,255,255,.5);
+}
+
+[data-bs-theme="dark"] .alert-modern.alert-danger {
+    background: rgba(220, 53, 69, 0.2);
+    color: #f8d7da;
+}
+
+[data-bs-theme="dark"] .auth-links {
+    border-color: rgba(255,255,255,.08);
+}
+
+/* Responsive */
+@@media (max-width: 480px) {
+    .modern-input {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .auth-submit-btn {
+        min-height: 44px;
+        font-size: 0.9rem;
+    }
+}
+</style>
 
 

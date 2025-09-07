@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Data;
@@ -58,7 +59,11 @@ namespace ExpenseTracker.Web.Data.Repositories
                 using var connection = _connectionFactory.CreateConnection();
                 var id = await connection.ExecuteScalarAsync<int>(
                     "dbo.usp_CreateCategory",
-                    new { category.Name, category.CreatedDate, category.IsActive },
+                    new { 
+                        Name = category.Name, 
+                        CreatedDate = category.CreatedDate, 
+                        IsActive = category.IsActive 
+                    },
                     commandType: CommandType.StoredProcedure);
                 return id;
             }
@@ -76,13 +81,17 @@ namespace ExpenseTracker.Web.Data.Repositories
                 using var connection = _connectionFactory.CreateConnection();
                 var rows = await connection.ExecuteScalarAsync<int>(
                     "dbo.usp_UpdateCategory",
-                    new { category.CategoryId, category.Name, category.IsActive },
+                    new { 
+                        CategoryId = category.CategoryId, 
+                        Name = category.Name, 
+                        IsActive = category.IsActive 
+                    },
                     commandType: CommandType.StoredProcedure);
                 return rows > 0;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to update category {CategoryId} for user {UserId}", category.CategoryId);
+                _logger.LogError(ex, "Failed to update category {CategoryId}", category.CategoryId);
                 throw;
             }
         }

@@ -30,16 +30,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle clear button clicks
     document.querySelectorAll('[data-clear-target]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             const target = btn.getAttribute('data-clear-target');
             const input = document.querySelector(target);
             if (input) {
                 input.value = '';
                 updateDateValueClass(input);
-                const form = btn.closest('form');
-                if (form) {
-                    form.submit();
-                }
+                // Only clear the field, don't auto-refresh or update URL
+                // User needs to click "Apply Filters" to refresh data
             }
         });
     });
@@ -53,9 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // AJAX filter submit to refresh list only
     $(document).off('submit', '#filterForm').on('submit', '#filterForm', function(e){
         e.preventDefault();
-        const qs = $(this).serialize();
-        const newUrl = window.location.pathname + '?' + qs;
-        window.history.replaceState({}, '', newUrl);
+        // Don't update URL, just refresh the list with current form data
         window.refreshExpensesList();
     });
 });
@@ -71,6 +69,9 @@ window.initializeExpensesPage = function(){
             ]
         });
     }
+
+    // Initialize view toggle functionality
+    initializeViewToggle();
 
     // intercept modal openers
     $(document).off('click', '.open-expense-modal').on('click', '.open-expense-modal', function(e){
@@ -139,11 +140,79 @@ window.initializeExpensesPage = function(){
     });
 }
 
+// Function to initialize view toggle functionality
+function initializeViewToggle() {
+    const tableViewBtn = document.getElementById('tableViewBtn');
+    const cardViewBtn = document.getElementById('cardViewBtn');
+    const tableView = document.getElementById('tableView');
+    const cardView = document.getElementById('cardView');
+
+    if (tableViewBtn && cardViewBtn && tableView) {
+        // Remove existing event listeners to prevent duplicates
+        tableViewBtn.replaceWith(tableViewBtn.cloneNode(true));
+        cardViewBtn.replaceWith(cardViewBtn.cloneNode(true));
+        
+        // Get the new elements after replacement
+        const newTableViewBtn = document.getElementById('tableViewBtn');
+        const newCardViewBtn = document.getElementById('cardViewBtn');
+        
+        newTableViewBtn.addEventListener('click', function() {
+            // Update button states
+            newTableViewBtn.classList.add('active');
+            newCardViewBtn.classList.remove('active');
+            
+            // Show table view, hide card view
+            tableView.classList.remove('d-none');
+            tableView.classList.add('d-block');
+            
+            if (cardView) {
+                cardView.classList.add('d-none');
+                cardView.classList.remove('d-block');
+            }
+        });
+
+        newCardViewBtn.addEventListener('click', function() {
+            // Update button states
+            newCardViewBtn.classList.add('active');
+            newTableViewBtn.classList.remove('active');
+            
+            // Hide table view, show card view
+            tableView.classList.add('d-none');
+            tableView.classList.remove('d-block');
+            
+            if (cardView) {
+                cardView.classList.remove('d-none');
+                cardView.classList.add('d-block');
+            }
+        });
+    }
+}
+
 window.refreshExpensesList = function(){
     const $listHost = $('#expensesList');
     if ($listHost.length === 0) return;
     const baseUrl = $listHost.data('list-url') || (window.location.pathname.replace(/\/$/, '') + '/List');
-    const url = baseUrl + window.location.search;
+    
+    // Get form data for filtering
+    const form = document.getElementById('filterForm');
+    let url = baseUrl;
+    if (form) {
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+        
+        // Only add non-empty parameters
+        for (const [key, value] of formData.entries()) {
+            if (value && value.trim() !== '') {
+                params.append(key, value);
+            }
+        }
+        
+        const queryString = params.toString();
+        if (queryString) {
+            url = baseUrl + '?' + queryString;
+        }
+    }
+    
     // show a lightweight loader inline
     const original = $listHost.html();
     $listHost.html('<div class="text-center p-5"><div class="spinner-border text-primary"></div></div>');
@@ -159,6 +228,8 @@ window.refreshExpensesList = function(){
                 ]
             });
         }
+        // Re-initialize view toggle functionality after refresh
+        initializeViewToggle();
      })
      .fail(function(){
         $listHost.html(original);

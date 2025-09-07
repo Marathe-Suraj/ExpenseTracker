@@ -76,7 +76,7 @@ namespace ExpenseTracker.Web.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to update category {Id} for user {UserId}", category.CategoryId);
+                _logger.LogError(ex, "Failed to update category {Id}", category.CategoryId);
                 throw;
             }
         }

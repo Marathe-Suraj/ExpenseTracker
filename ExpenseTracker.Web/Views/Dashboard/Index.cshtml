@@ -3,114 +3,165 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="dashboard-hero mb-3 fade-in">
-    <div class="d-flex align-items-center justify-content-between">
+<div class="dashboard-hero mb-4 fade-in">
+    <div class="d-flex align-items-center justify-content-between flex-wrap">
         <div class="d-flex align-items-center">
             <div class="me-3">
-                <span class="icon d-inline-flex align-items-center justify-content-center" style="width:48px;height:48px;border-radius:12px;background:rgba(13,110,253,.12);color:#0d6efd;">
-                    <i class="bi bi-wallet2"></i>
+                <span class="hero-icon d-inline-flex align-items-center justify-content-center">
+                    <i class="bi bi-graph-up-arrow"></i>
                 </span>
             </div>
             <div>
-                <div class="fw-semibold text-uppercase small text-muted">Overview</div>
-                <h4 class="mb-0">Your Expense Dashboard</h4>
+                <div class="hero-subtitle">Financial Overview</div>
+                <h2 class="hero-title mb-0">Expense Dashboard</h2>
             </div>
         </div>
-        <div>
-            <button class="btn btn-outline-secondary" data-show-details>
-                <i class="bi bi-list-ul me-1"></i> View Details
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-primary btn-modern" data-show-details>
+                <i class="bi bi-list-ul me-1"></i> 
+                <span class="d-none d-sm-inline">View Details</span>
             </button>
+            <a href="/Expenses" class="btn btn-primary btn-modern">
+                <i class="bi bi-plus-lg me-1"></i>
+                <span class="d-none d-sm-inline">Add Expense</span>
+            </a>
         </div>
     </div>
-    <div class="small text-muted mt-2">Track today's spending, this month, and annual totals at a glance.</div>
+    <div class="hero-description mt-2">
+        Track your spending patterns, analyze trends, and stay on top of your financial goals with real-time insights.
     </div>
+</div>
 
-<div class="row g-3">
+<!-- Quick Stats Cards -->
+<div class="row g-4 mb-4">
     <div class="col-12 col-md-4">
-        <div class="stat-tile fade-in">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="label">Total Today</div>
-                    <div class="value" data-counter data-target="@Model.TotalToday.ToString(System.Globalization.CultureInfo.InvariantCulture)" >@Model.TotalToday.ToString("C2")</div>
+        <div class="stat-card stat-card-today fade-in" data-delay="100">
+            <div class="stat-card-header">
+                <div class="stat-icon stat-icon-today">
+                    <i class="bi bi-brightness-high"></i>
                 </div>
-                <div class="icon"><i class="bi bi-sun"></i></div>
+                <div class="stat-trend">
+                    <i class="bi bi-arrow-up-short text-success"></i>
+                </div>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Today's Spending</div>
+                <div class="stat-value" data-counter data-target="@Model.TotalToday.ToString(System.Globalization.CultureInfo.InvariantCulture)">@Model.TotalToday.ToString("C2")</div>
+                <div class="stat-subtitle">Current day expenses</div>
             </div>
         </div>
     </div>
     <div class="col-12 col-md-4">
-        <div class="stat-tile fade-in">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="label">Total This Month</div>
-                    <div class="value" data-counter data-target="@Model.TotalThisMonth.ToString(System.Globalization.CultureInfo.InvariantCulture)">@Model.TotalThisMonth.ToString("C2")</div>
+        <div class="stat-card stat-card-month fade-in" data-delay="200">
+            <div class="stat-card-header">
+                <div class="stat-icon stat-icon-month">
+                    <i class="bi bi-calendar-month"></i>
                 </div>
-                <div class="icon"><i class="bi bi-calendar3"></i></div>
+                <div class="stat-trend">
+                    <i class="bi bi-arrow-up-short text-warning"></i>
+                </div>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">This Month</div>
+                <div class="stat-value" data-counter data-target="@Model.TotalThisMonth.ToString(System.Globalization.CultureInfo.InvariantCulture)">@Model.TotalThisMonth.ToString("C2")</div>
+                <div class="stat-subtitle">Monthly total</div>
             </div>
         </div>
     </div>
     <div class="col-12 col-md-4">
-        <div class="stat-tile fade-in">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="label">Total This Year</div>
-                    <div class="value" data-counter data-target="@Model.TotalThisYear.ToString(System.Globalization.CultureInfo.InvariantCulture)">@Model.TotalThisYear.ToString("C2")</div>
+        <div class="stat-card stat-card-year fade-in" data-delay="300">
+            <div class="stat-card-header">
+                <div class="stat-icon stat-icon-year">
+                    <i class="bi bi-graph-up"></i>
                 </div>
-                <div class="icon"><i class="bi bi-bar-chart"></i></div>
+                <div class="stat-trend">
+                    <i class="bi bi-arrow-up-short text-info"></i>
+                </div>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">This Year</div>
+                <div class="stat-value" data-counter data-target="@Model.TotalThisYear.ToString(System.Globalization.CultureInfo.InvariantCulture)">@Model.TotalThisYear.ToString("C2")</div>
+                <div class="stat-subtitle">Annual spending</div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row g-3 mt-1">
-    <div class="col-12 col-md-4">
-        <div class="card card-neo h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h6 class="mb-0">Daily by Category</h6>
-                    <i class="bi bi-pie-chart"></i>
+<!-- Analytics Charts Section -->
+<div class="analytics-section mb-4">
+    <div class="section-header mb-3">
+        <h4 class="section-title">Spending Analytics</h4>
+        <p class="section-subtitle">Visualize your expense patterns across different time periods</p>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-12 col-lg-4">
+            <div class="chart-card chart-card-daily fade-in" data-delay="400">
+                <div class="chart-header">
+                    <div class="chart-info">
+                        <h6 class="chart-title">Today's Breakdown</h6>
+                        <p class="chart-subtitle">Category distribution</p>
+                    </div>
+                    <div class="chart-icon">
+                        <i class="bi bi-pie-chart-fill"></i>
+                    </div>
                 </div>
                 <div class="chart-container">
                     <canvas id="pieDaily"></canvas>
-                    <div id="pieDailyEmpty" class="d-none text-center text-muted py-5">
-                        <i class="bi bi-pie-chart-fill fs-1 mb-3 opacity-50"></i>
-                        <div class="fw-semibold">No expenses today</div>
-                        <div class="small">Start tracking your daily spending</div>
+                    <div id="pieDailyEmpty" class="chart-empty d-none">
+                        <div class="empty-icon">
+                            <i class="bi bi-pie-chart-fill"></i>
+                        </div>
+                        <div class="empty-title">No expenses today</div>
+                        <div class="empty-subtitle">Start tracking your daily spending</div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-12 col-md-4">
-        <div class="card card-neo h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h6 class="mb-0">Monthly by Category</h6>
-                    <i class="bi bi-graph-up"></i>
+        
+        <div class="col-12 col-lg-4">
+            <div class="chart-card chart-card-monthly fade-in" data-delay="500">
+                <div class="chart-header">
+                    <div class="chart-info">
+                        <h6 class="chart-title">Monthly Overview</h6>
+                        <p class="chart-subtitle">This month's spending</p>
+                    </div>
+                    <div class="chart-icon">
+                        <i class="bi bi-bar-chart-fill"></i>
+                    </div>
                 </div>
                 <div class="chart-container">
                     <canvas id="pieMonthly"></canvas>
-                    <div id="pieMonthlyEmpty" class="d-none text-center text-muted py-5">
-                        <i class="bi bi-graph-up fs-1 mb-3 opacity-50"></i>
-                        <div class="fw-semibold">No expenses this month</div>
-                        <div class="small">Add your first expense to see insights</div>
+                    <div id="pieMonthlyEmpty" class="chart-empty d-none">
+                        <div class="empty-icon">
+                            <i class="bi bi-bar-chart-fill"></i>
+                        </div>
+                        <div class="empty-title">No expenses this month</div>
+                        <div class="empty-subtitle">Add your first expense to see insights</div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-12 col-md-4">
-        <div class="card card-neo h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h6 class="mb-0">Yearly by Category</h6>
-                    <i class="bi bi-activity"></i>
+        
+        <div class="col-12 col-lg-4">
+            <div class="chart-card chart-card-yearly fade-in" data-delay="600">
+                <div class="chart-header">
+                    <div class="chart-info">
+                        <h6 class="chart-title">Annual Trends</h6>
+                        <p class="chart-subtitle">Year-to-date analysis</p>
+                    </div>
+                    <div class="chart-icon">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
                 </div>
                 <div class="chart-container">
                     <canvas id="pieYearly"></canvas>
-                    <div id="pieYearlyEmpty" class="d-none text-center text-muted py-5">
-                        <i class="bi bi-activity fs-1 mb-3 opacity-50"></i>
-                        <div class="fw-semibold">No expenses this year</div>
-                        <div class="small">Begin your expense tracking journey</div>
+                    <div id="pieYearlyEmpty" class="chart-empty d-none">
+                        <div class="empty-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div class="empty-title">No expenses this year</div>
+                        <div class="empty-subtitle">Begin your expense tracking journey</div>
                     </div>
                 </div>
             </div>
@@ -118,47 +169,72 @@
     </div>
 </div>
 
-<div class="row g-3 mt-1">
-    <div class="col-12">
-        <div class="card card-neo">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h6 class="mb-0">Top Categories This Month</h6>
-                    <span class="text-muted small">Based on spend</span>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 table-modern">
-                        <thead>
-                            <tr>
-                                <th>Category</th>
-                                <th class="text-end">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (!Model.MonthlyCategoryTotals.Any())
-                            {
-                                <tr>
-                                    <td colspan="2" class="text-center text-muted py-4">
-                                        <i class="bi bi-inbox fs-4 mb-2 d-block opacity-50"></i>
-                                        <div class="fw-semibold">No expenses this month</div>
-                                        <div class="small">Add expenses to see category breakdown</div>
-                                    </td>
-                                </tr>
-                            }
-                            else
-                            {
-                                foreach (var item in Model.MonthlyCategoryTotals.OrderByDescending(x => x.TotalAmount).Take(6))
-                                {
-                                    <tr>
-                                        <td>@item.CategoryName</td>
-                                        <td class="text-end fw-semibold">@item.TotalAmount.ToString("C2")</td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
+<!-- Top Categories Section -->
+<div class="categories-section">
+    <div class="category-breakdown-card fade-in" data-delay="700">
+        <div class="category-header">
+            <div class="category-info">
+                <h4 class="category-title">Top Spending Categories</h4>
+                <p class="category-subtitle">Your highest expense categories this month</p>
             </div>
+            <div class="category-actions">
+                <a href="/Categories" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-gear me-1"></i>Manage
+                </a>
+            </div>
+        </div>
+        
+        <div class="category-content">
+            @if (!Model.MonthlyCategoryTotals.Any())
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="bi bi-folder2-open"></i>
+                    </div>
+                    <div class="empty-title">No expenses this month</div>
+                    <div class="empty-subtitle">Add expenses to see category breakdown</div>
+                    <a href="/Expenses" class="btn btn-primary btn-sm mt-3">
+                        <i class="bi bi-plus-lg me-1"></i>Add First Expense
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="category-list">
+                    @{
+                        var totalMonthly = Model.MonthlyCategoryTotals.Sum(x => x.TotalAmount);
+                        var topCategories = Model.MonthlyCategoryTotals.OrderByDescending(x => x.TotalAmount).Take(6);
+                    }
+                    @foreach (var item in topCategories)
+                    {
+                        var percentage = totalMonthly > 0 ? (item.TotalAmount / totalMonthly * 100) : 0;
+                        <div class="category-item">
+                            <div class="category-item-header">
+                                <div class="category-name">
+                                    <i class="bi bi-tag-fill me-2"></i>
+                                    @item.CategoryName
+                                </div>
+                                <div class="category-amount">@item.TotalAmount.ToString("C2")</div>
+                            </div>
+                            <div class="category-progress">
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: @percentage.ToString("F1")%"></div>
+                                </div>
+                                <span class="progress-text">@percentage.ToString("F1")%</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+                
+                @if (Model.MonthlyCategoryTotals.Count > 6)
+                {
+                    <div class="category-footer">
+                        <button class="btn btn-link btn-sm" data-show-details>
+                            <i class="bi bi-three-dots me-1"></i>View all @Model.MonthlyCategoryTotals.Count categories
+                        </button>
+                    </div>
+                }
+            }
         </div>
     </div>
 </div>
@@ -217,5 +293,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="~/js/dashboard.js" asp-append-version="true"></script>
 }
+
+
 
 

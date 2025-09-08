@@ -1,0 +1,69 @@
+@{
+    var title = ViewData["AuthTitle"] as string ?? "ExpenseTracker";
+    var subtitle = ViewData["AuthSubtitle"] as string ?? "Manage your finances with ease";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ExpenseTracker</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ExpenseTracker.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <!-- Fallback for Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" integrity="sha512-dPXYcDub/aeb08c63jRq/k6GaKccl256JQy/AnOq7CAnEZ9FzSL9wSbcZkMp4R26qAlAi/E4WbVi/+ze6/WMpPQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-brand">
+                    <div class="brand-icon">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div class="brand-content">
+                        <h1 class="brand-text">ExpenseTracker</h1>
+                        <p class="brand-subtitle">@subtitle</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="auth-body">
+                <div class="auth-form-header">
+                    <h2 class="auth-title">@title</h2>
+                </div>
+                
+                @RenderBody()
+            </div>
+            
+            <div class="auth-footer">
+                <p class="auth-footer-text">
+                    &copy; 2025 ExpenseTracker - Secure Financial Management
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/auth.js" asp-append-version="true"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        const key = 'theme';
+        const toggle = document.getElementById('themeToggle');
+        const applyTheme = t => document.documentElement.setAttribute('data-bs-theme', t);
+        const saved = localStorage.getItem(key) || 'light';
+        applyTheme(saved);
+        if (toggle) { toggle.checked = saved === 'dark'; toggle.addEventListener('change', () => { const t = toggle.checked ? 'dark' : 'light'; localStorage.setItem(key, t); applyTheme(t); }); }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+

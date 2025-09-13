@@ -25,7 +25,7 @@
                     <span class="brand-text">ExpenseTracker</span>
                 </a>
                 
-                <button class="navbar-toggler modern-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler modern-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="toggler-line"></span>
                     <span class="toggler-line"></span>
                     <span class="toggler-line"></span>
@@ -119,6 +119,30 @@
         const saved = localStorage.getItem(key) || 'light';
         applyTheme(saved);
         if (toggle) { toggle.checked = saved === 'dark'; toggle.addEventListener('change', () => { const t = toggle.checked ? 'dark' : 'light'; localStorage.setItem(key, t); applyTheme(t); }); }
+        
+        // Hamburger menu toggle fix
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+            
+            if (navbarToggler && navbarCollapse) {
+                // Ensure initial state is collapsed
+                navbarToggler.classList.add('collapsed');
+                navbarToggler.setAttribute('aria-expanded', 'false');
+                navbarCollapse.classList.remove('show');
+                
+                // Listen for Bootstrap collapse events
+                navbarCollapse.addEventListener('show.bs.collapse', function () {
+                    navbarToggler.classList.remove('collapsed');
+                    navbarToggler.setAttribute('aria-expanded', 'true');
+                });
+                
+                navbarCollapse.addEventListener('hide.bs.collapse', function () {
+                    navbarToggler.classList.add('collapsed');
+                    navbarToggler.setAttribute('aria-expanded', 'false');
+                });
+            }
+        });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

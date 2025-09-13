@@ -53,8 +53,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // AJAX filter submit to refresh list only
     $(document).off('submit', '#filterForm').on('submit', '#filterForm', function(e){
         e.preventDefault();
+        const $submitBtn = $(this).find('#filterGoBtn');
+        
+        // Show loading on filter button
+        window.ButtonLoader.show($submitBtn, 'Filtering...');
+        
         // Don't update URL, just refresh the list with current form data
         window.refreshExpensesList();
+        
+        // Hide loading after a delay (refreshExpensesList will handle the actual completion)
+        setTimeout(function() {
+            window.ButtonLoader.hide($submitBtn);
+        }, 1000);
     });
 });
 
@@ -73,36 +83,64 @@ window.initializeExpensesPage = function(){
     // Initialize view toggle functionality
     initializeViewToggle();
 
+    // Clear modal content when modal is hidden to prevent content flash
+    $('#expenseModal').on('hidden.bs.modal', function () {
+        $('#expenseModalBody').html('');
+        $('#expenseModalLoader').addClass('d-none');
+    });
+
     // intercept modal openers
     $(document).off('click', '.open-expense-modal').on('click', '.open-expense-modal', function(e){
         e.preventDefault();
-        const url = $(this).data('url');
+        const $button = $(this);
+        const url = $button.data('url');
         const $modal = $('#expenseModal');
         const $body = $('#expenseModalBody');
         const $loader = $('#expenseModalLoader');
-        $loader.show();
+        
+        // Show button loading state immediately
+        window.ButtonLoader.show($button, 'Loading...');
+        
+        // Clear previous content immediately to prevent flash
+        $body.html('');
+        $loader.removeClass('d-none');
         $body.addClass('position-relative');
+        
         $.ajax({ url: url, headers: { 'X-Requested-With': 'XMLHttpRequest' } }).done(function(html){
             $body.html(html);
-            $loader.hide();
+            $loader.addClass('d-none');
         }).fail(function(){
             $body.html('<div class="p-4 text-danger">Failed to load. Please try again.</div>');
-            $loader.hide();
+            $loader.addClass('d-none');
+        }).always(function(){
+            // Restore button state
+            window.ButtonLoader.hide($button);
         });
     });
 
     // New Expense top button
     $(document).off('click', '[data-bs-target="#expenseModal"][data-url]').on('click', '[data-bs-target="#expenseModal"][data-url]', function(){
-        const url = $(this).data('url');
+        const $button = $(this);
+        const url = $button.data('url');
         const $body = $('#expenseModalBody');
         const $loader = $('#expenseModalLoader');
-        $loader.show();
+        
+        // Show button loading state immediately
+        window.ButtonLoader.show($button, 'Loading...');
+        
+        // Clear previous content immediately to prevent flash
+        $body.html('');
+        $loader.removeClass('d-none');
+        
         $.ajax({ url: url, headers: { 'X-Requested-With': 'XMLHttpRequest' } }).done(function(html){
             $body.html(html);
-            $loader.hide();
+            $loader.addClass('d-none');
         }).fail(function(){
             $body.html('<div class="p-4 text-danger">Failed to load. Please try again.</div>');
-            $loader.hide();
+            $loader.addClass('d-none');
+        }).always(function(){
+            // Restore button state
+            window.ButtonLoader.hide($button);
         });
     });
 

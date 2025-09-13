@@ -34,46 +34,15 @@
 @section Styles{
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/expenses.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/categories.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/dt-2.1.5/datatables.min.css" />
-    <style>
-        .categories-hero {
-            background: linear-gradient(135deg, rgba(13,110,253,.08), rgba(32,201,151,.06));
-            border: 1px solid rgba(108,117,125,.12);
-            border-radius: 1.25rem;
-            padding: 2rem;
-            backdrop-filter: blur(10px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .categories-hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,.02) 50%, transparent 70%);
-            pointer-events: none;
-        }
-
-        /* Dark mode */
-        [data-bs-theme="dark"] .categories-hero {
-            background: linear-gradient(135deg, rgba(13,110,253,.15), rgba(32,201,151,.10));
-            border-color: rgba(255,255,255,.08);
-        }
-    </style>
 }
 
 @section Scripts{
     <script src="https://cdn.datatables.net/v/bs5/dt-2.1.5/datatables.min.js"></script>
     <script src="~/js/tables.js" asp-append-version="true"></script>
     <script src="~/js/categories.js" asp-append-version="true"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function(){
-            window.initializeCategoriesPage && window.initializeCategoriesPage();
-        });
-    </script>
+    <script src="~/js/categories-page.js" asp-append-version="true"></script>
 }
 
 <!-- Modal Host -->
@@ -81,7 +50,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-body p-0 position-relative" id="categoryModalBody">
-                <div class="p-5 text-center text-muted" id="categoryModalLoader" style="display:none;">
+                <div class="p-5 text-center text-muted d-none" id="categoryModalLoader">
                     <div class="spinner-border text-primary mb-3" role="status"></div>
                     <div>Loading...</div>
                 </div>

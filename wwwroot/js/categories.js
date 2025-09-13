@@ -11,27 +11,57 @@ window.initializeCategoriesPage = function(){
         });
     }
 
+    // Clear modal content when modal is hidden to prevent content flash
+    $('#categoryModal').on('hidden.bs.modal', function () {
+        $('#categoryModalBody').html('');
+        $('#categoryModalLoader').addClass('d-none');
+    });
+
     // open modal links
     $(document).off('click', '.open-category-modal').on('click', '.open-category-modal', function(e){
         e.preventDefault();
-        const url = $(this).data('url');
+        const $button = $(this);
+        const url = $button.data('url');
         const $body = $('#categoryModalBody');
         const $loader = $('#categoryModalLoader');
-        $loader.show();
+        
+        // Show button loading state immediately
+        window.ButtonLoader.show($button, 'Loading...');
+        
+        // Clear previous content immediately to prevent flash
+        $body.html('');
+        $loader.removeClass('d-none');
+        
         $.ajax({ url, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-         .done(function(html){ $body.html(html); $loader.hide(); })
-         .fail(function(){ $body.html('<div class="p-4 text-danger">Failed to load. Please try again.</div>'); $loader.hide(); });
+         .done(function(html){ $body.html(html); $loader.addClass('d-none'); })
+         .fail(function(){ $body.html('<div class="p-4 text-danger">Failed to load. Please try again.</div>'); $loader.addClass('d-none'); })
+         .always(function(){
+            // Restore button state
+            window.ButtonLoader.hide($button);
+         });
     });
 
     // new button with data-url
     $(document).off('click', '[data-bs-target="#categoryModal"][data-url]').on('click', '[data-bs-target="#categoryModal"][data-url]', function(){
-        const url = $(this).data('url');
+        const $button = $(this);
+        const url = $button.data('url');
         const $body = $('#categoryModalBody');
         const $loader = $('#categoryModalLoader');
-        $loader.show();
+        
+        // Show button loading state immediately
+        window.ButtonLoader.show($button, 'Loading...');
+        
+        // Clear previous content immediately to prevent flash
+        $body.html('');
+        $loader.removeClass('d-none');
+        
         $.ajax({ url, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-         .done(function(html){ $body.html(html); $loader.hide(); })
-         .fail(function(){ $body.html('<div class="p-4 text-danger">Failed to load. Please try again.</div>'); $loader.hide(); });
+         .done(function(html){ $body.html(html); $loader.addClass('d-none'); })
+         .fail(function(){ $body.html('<div class="p-4 text-danger">Failed to load. Please try again.</div>'); $loader.addClass('d-none'); })
+         .always(function(){
+            // Restore button state
+            window.ButtonLoader.hide($button);
+         });
     });
 
     // submit create/edit/delete

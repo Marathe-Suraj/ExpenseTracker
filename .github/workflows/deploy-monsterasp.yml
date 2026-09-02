@@ -43,61 +43,12 @@ jobs:
           SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
           SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
         run: |
-          $msdeploy = Join-Path ${env:ProgramFiles(x86)} 'IIS\Microsoft Web Deploy V3\msdeploy.exe'
-          if (-not (Test-Path $msdeploy)) {
-            throw "Web Deploy not found at $msdeploy"
-          }
-
-          $site = ($env:WEBSITE_NAME ?? '').Trim()
-          $serverRaw = ($env:SERVER_COMPUTER_NAME ?? '').Trim()
-          $username = ($env:SERVER_USERNAME ?? '').Trim()
-          $password = $env:SERVER_PASSWORD
-          $source = Join-Path $env:GITHUB_WORKSPACE 'publish'
-
-          if ([string]::IsNullOrWhiteSpace($site) -or
-              [string]::IsNullOrWhiteSpace($serverRaw) -or
-              [string]::IsNullOrWhiteSpace($username) -or
-              [string]::IsNullOrWhiteSpace($password)) {
-            throw 'One or more WebDeploy secrets are empty (WEBSITE_NAME, SERVER_COMPUTER_NAME, SERVER_USERNAME, SERVER_PASSWORD).'
-          }
-
-          # Public site hosts (*.runasp.net) are not the Web Deploy endpoint.
-          if ($serverRaw -match 'runasp\.net' -or $serverRaw -notmatch 'siteasp\.net') {
-            throw @"
-Invalid SERVER_COMPUTER_NAME secret.
-Use the WebDeploy URL from MonsterASP Control Panel, e.g.:
-  https://siteXXXX.siteasp.net:8172
-Do NOT use the public website host (*.runasp.net).
-"@
-          }
-
-          # Normalize to https://host:8172/msdeploy.axd?site=siteXXXX (strip spaces/path noise)
-          $serverClean = ($serverRaw -replace '\s', '')
-          if ($serverClean -notmatch '^https?://') {
-            $serverClean = "https://$serverClean"
-          }
-          if ($serverClean -notmatch '^(https://[^/:]+)') {
-            throw "Could not parse host from SERVER_COMPUTER_NAME."
-          }
-          $hostName = $Matches[1]
-          $computerName = "${hostName}:8172/msdeploy.axd?site=$site"
-
-          Write-Host "Deploying contentPath '$site' (Web Deploy host normalized)."
-
-          $msdeployArguments = @(
-            '-verb:sync',
-            '-allowUntrusted',
-            "-source:contentPath=$source",
-            "-dest:contentPath=$site,computerName=$computerName,userName=$username,password=$password,authtype=Basic,includeAcls=False",
-            '-disableLink:AppPoolExtension',
-            '-disableLink:ContentExtension',
-            '-disableLink:CertificateExtension'
-          )
-
-          & $msdeploy $msdeployArguments
-          if ($LASTEXITCODE -ne 0) {
-            throw "msdeploy failed with exit code $LASTEXITCODE"
-          }
+          & "$env:GITHUB_WORKSPACE\.github\scripts\Deploy-MonsterAsp.ps1" `
+            -SourcePath (Join-Path $env:GITHUB_WORKSPACE 'publish') `
+            -WebsiteName $env:WEBSITE_NAME `
+            -ServerComputerName $env:SERVER_COMPUTER_NAME `
+            -Username $env:SERVER_USERNAME `
+            -Password $env:SERVER_PASSWORD
 
       - name: Prepare email details
         if: always()

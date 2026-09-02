@@ -12,11 +12,7 @@ CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 QuestPDF.Settings.License = LicenseType.Community;
 
 // Add services to the container.
-var mvcBuilder = builder.Services.AddControllersWithViews();
-if (builder.Environment.IsDevelopment())
-{
-    mvcBuilder.AddRazorRuntimeCompilation();
-}
+builder.Services.AddControllersWithViews();
 
 // Add localization services
 builder.Services.Configure<RequestLocalizationOptions>(options =>

@@ -44,14 +44,33 @@ jobs:
           }
 
           $site = "${{ secrets.WEBSITE_NAME }}"
-          $server = "${{ secrets.SERVER_COMPUTER_NAME }}".TrimEnd('/')
+          $server = "${{ secrets.SERVER_COMPUTER_NAME }}".Trim().TrimEnd('/')
           $username = "${{ secrets.SERVER_USERNAME }}"
           $password = "${{ secrets.SERVER_PASSWORD }}"
           $source = Join-Path $env:GITHUB_WORKSPACE "publish"
 
+          # Public site URLs (*.runasp.net) are NOT the Web Deploy endpoint.
+          # Control panel value looks like: https://siteXXXX.siteasp.net:8172
+          if ([string]::IsNullOrWhiteSpace($server) -or $server -match 'runasp\.net' -or $server -notmatch 'siteasp\.net') {
+            throw @"
+Invalid SERVER_COMPUTER_NAME secret.
+Use the WebDeploy URL from MonsterASP Control Panel, e.g.:
+  https://siteXXXX.siteasp.net:8172
+Do NOT use the public website host (*.runasp.net).
+"@
+          }
+
+          if ($server -notmatch '^https://') {
+            $server = "https://$server"
+          }
+          if ($server -notmatch ':8172') {
+            $server = "$server:8172"
+          }
           if ($server -notmatch 'msdeploy\.axd') {
             $server = "$server/msdeploy.axd?site=$site"
           }
+
+          Write-Host "Deploying to site '$site' via Web Deploy endpoint."
 
           & $msdeploy `
             -verb:sync `

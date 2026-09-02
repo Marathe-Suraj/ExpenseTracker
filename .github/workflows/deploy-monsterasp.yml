@@ -37,21 +37,32 @@ jobs:
       - name: Deploy to MonsterASP.NET via Web Deploy
         id: deploy
         shell: pwsh
+        env:
+          WEBSITE_NAME: ${{ secrets.WEBSITE_NAME }}
+          SERVER_COMPUTER_NAME: ${{ secrets.SERVER_COMPUTER_NAME }}
+          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
         run: |
-          $msdeploy = "${env:ProgramFiles(x86)}\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          $msdeploy = Join-Path ${env:ProgramFiles(x86)} 'IIS\Microsoft Web Deploy V3\msdeploy.exe'
           if (-not (Test-Path $msdeploy)) {
             throw "Web Deploy not found at $msdeploy"
           }
 
-          $site = "${{ secrets.WEBSITE_NAME }}"
-          $server = "${{ secrets.SERVER_COMPUTER_NAME }}".Trim().TrimEnd('/')
-          $username = "${{ secrets.SERVER_USERNAME }}"
-          $password = "${{ secrets.SERVER_PASSWORD }}"
-          $source = Join-Path $env:GITHUB_WORKSPACE "publish"
+          $site = ($env:WEBSITE_NAME ?? '').Trim()
+          $serverRaw = ($env:SERVER_COMPUTER_NAME ?? '').Trim()
+          $username = ($env:SERVER_USERNAME ?? '').Trim()
+          $password = $env:SERVER_PASSWORD
+          $source = Join-Path $env:GITHUB_WORKSPACE 'publish'
 
-          # Public site URLs (*.runasp.net) are NOT the Web Deploy endpoint.
-          # Control panel value looks like: https://siteXXXX.siteasp.net:8172
-          if ([string]::IsNullOrWhiteSpace($server) -or $server -match 'runasp\.net' -or $server -notmatch 'siteasp\.net') {
+          if ([string]::IsNullOrWhiteSpace($site) -or
+              [string]::IsNullOrWhiteSpace($serverRaw) -or
+              [string]::IsNullOrWhiteSpace($username) -or
+              [string]::IsNullOrWhiteSpace($password)) {
+            throw 'One or more WebDeploy secrets are empty (WEBSITE_NAME, SERVER_COMPUTER_NAME, SERVER_USERNAME, SERVER_PASSWORD).'
+          }
+
+          # Public site hosts (*.runasp.net) are not the Web Deploy endpoint.
+          if ($serverRaw -match 'runasp\.net' -or $serverRaw -notmatch 'siteasp\.net') {
             throw @"
 Invalid SERVER_COMPUTER_NAME secret.
 Use the WebDeploy URL from MonsterASP Control Panel, e.g.:
@@ -60,27 +71,30 @@ Do NOT use the public website host (*.runasp.net).
 "@
           }
 
-          if ($server -notmatch '^https://') {
-            $server = "https://$server"
+          # Normalize to https://host:8172/msdeploy.axd?site=siteXXXX (strip spaces/path noise)
+          $serverClean = ($serverRaw -replace '\s', '')
+          if ($serverClean -notmatch '^https?://') {
+            $serverClean = "https://$serverClean"
           }
-          if ($server -notmatch ':8172') {
-            $server = "$server:8172"
+          if ($serverClean -notmatch '^(https://[^/:]+)') {
+            throw "Could not parse host from SERVER_COMPUTER_NAME."
           }
-          if ($server -notmatch 'msdeploy\.axd') {
-            $server = "$server/msdeploy.axd?site=$site"
-          }
+          $hostName = $Matches[1]
+          $computerName = "${hostName}:8172/msdeploy.axd?site=$site"
 
-          Write-Host "Deploying to site '$site' via Web Deploy endpoint."
+          Write-Host "Deploying contentPath '$site' (Web Deploy host normalized)."
 
-          & $msdeploy `
-            -verb:sync `
-            "-source:contentPath=$source" `
-            "-dest:contentPath=$site,computerName=$server,userName=$username,password=$password,authtype=Basic,includeAcls=False" `
-            -allowUntrusted `
-            -disableLink:AppPoolExtension `
-            -disableLink:ContentExtension `
-            -disableLink:CertificateExtension
+          $msdeployArguments = @(
+            '-verb:sync',
+            '-allowUntrusted',
+            "-source:contentPath=$source",
+            "-dest:contentPath=$site,computerName=$computerName,userName=$username,password=$password,authtype=Basic,includeAcls=False",
+            '-disableLink:AppPoolExtension',
+            '-disableLink:ContentExtension',
+            '-disableLink:CertificateExtension'
+          )
 
+          & $msdeploy $msdeployArguments
           if ($LASTEXITCODE -ne 0) {
             throw "msdeploy failed with exit code $LASTEXITCODE"
           }

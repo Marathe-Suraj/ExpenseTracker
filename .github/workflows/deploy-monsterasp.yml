@@ -32,15 +32,39 @@ jobs:
           --runtime win-x86
           --self-contained false
 
+      # MonsterASP shared hosting allows contentPath deploy only (not recycleApp / app pool stop).
+      # Official approach: https://help.monsterasp.net/books/deploy/page/how-to-deploy-website-content-from-command-line
       - name: Deploy to MonsterASP.NET via Web Deploy
         id: deploy
-        uses: rasmusbuchholdt/simply-web-deploy@2.2.0
-        with:
-          website-name: ${{ secrets.WEBSITE_NAME }}
-          server-computer-name: ${{ secrets.SERVER_COMPUTER_NAME }}
-          server-username: ${{ secrets.SERVER_USERNAME }}
-          server-password: ${{ secrets.SERVER_PASSWORD }}
-          source-path: '\publish\'
+        shell: pwsh
+        run: |
+          $msdeploy = "${env:ProgramFiles(x86)}\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          if (-not (Test-Path $msdeploy)) {
+            throw "Web Deploy not found at $msdeploy"
+          }
+
+          $site = "${{ secrets.WEBSITE_NAME }}"
+          $server = "${{ secrets.SERVER_COMPUTER_NAME }}".TrimEnd('/')
+          $username = "${{ secrets.SERVER_USERNAME }}"
+          $password = "${{ secrets.SERVER_PASSWORD }}"
+          $source = Join-Path $env:GITHUB_WORKSPACE "publish"
+
+          if ($server -notmatch 'msdeploy\.axd') {
+            $server = "$server/msdeploy.axd?site=$site"
+          }
+
+          & $msdeploy `
+            -verb:sync `
+            "-source:contentPath=$source" `
+            "-dest:contentPath=$site,computerName=$server,userName=$username,password=$password,authtype=Basic,includeAcls=False" `
+            -allowUntrusted `
+            -disableLink:AppPoolExtension `
+            -disableLink:ContentExtension `
+            -disableLink:CertificateExtension
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "msdeploy failed with exit code $LASTEXITCODE"
+          }
 
       - name: Prepare email details
         if: always()

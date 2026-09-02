@@ -1,0 +1,119 @@
+name: Build and deploy to MonsterASP.NET
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-monsterasp
+  cancel-in-progress: true
+
+jobs:
+  build_and_deploy:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 6
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Publish
+        id: publish
+        run: >
+          dotnet publish ExpenseTracker.csproj
+          --configuration Release
+          --output "${{ github.workspace }}\publish"
+          --runtime win-x86
+          --self-contained false
+
+      - name: Deploy to MonsterASP.NET via Web Deploy
+        id: deploy
+        uses: rasmusbuchholdt/simply-web-deploy@2.2.0
+        with:
+          website-name: ${{ secrets.WEBSITE_NAME }}
+          server-computer-name: ${{ secrets.SERVER_COMPUTER_NAME }}
+          server-username: ${{ secrets.SERVER_USERNAME }}
+          server-password: ${{ secrets.SERVER_PASSWORD }}
+          source-path: '\publish\'
+
+      - name: Prepare email details
+        if: always()
+        id: meta
+        shell: pwsh
+        run: |
+          $tz = [TimeZoneInfo]::FindSystemTimeZoneById('India Standard Time')
+          $now = [TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $tz)
+          $datetime = $now.ToString('dd/MM/yyyy HH:mm:ss')
+          $commitId = (git rev-parse --short HEAD).Trim()
+          $commitMsg = (git log -1 --pretty=%s).Trim()
+          $branch = '${{ github.ref_name }}'
+          $pipeline = '${{ github.workflow }}'
+          $runUrl = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+
+          "datetime=$datetime" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "commit_id=$commitId" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "commit_msg=$commitMsg" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "branch=$branch" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "pipeline=$pipeline" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "run_url=$runUrl" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      # Requires GitHub secrets MAIL_USERNAME + MAIL_PASSWORD (Gmail App Password, not login password)
+      - name: Email on success
+        if: always() && steps.publish.outcome == 'success' && steps.deploy.outcome == 'success'
+        continue-on-error: true
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          secure: false
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          to: surajmarathe37@gmail.com
+          from: ExpenseTracker CI <${{ secrets.MAIL_USERNAME }}>
+          subject: ✅ PIPELINE NOTIFICATION — Succeeded
+          html_body: |
+            <h2>PIPELINE NOTIFICATION</h2>
+            <p><strong>✅ Site is Up &amp; Running ✅</strong></p>
+            <p>
+              <strong>Website:</strong> <a href="https://expensetracker.runasp.net">https://expensetracker.runasp.net</a><br/>
+              <strong>Pipeline:</strong> ${{ steps.meta.outputs.pipeline }}<br/>
+              <strong>Status:</strong> 🟢 Succeeded<br/>
+              <strong>Commit ID:</strong> #${{ steps.meta.outputs.commit_id }}<br/>
+              <strong>Commit Message:</strong> ${{ steps.meta.outputs.commit_msg }}<br/>
+              <strong>Branch:</strong> ${{ steps.meta.outputs.branch }}<br/>
+              <strong>Date &amp; Time:</strong> ${{ steps.meta.outputs.datetime }} (IST)<br/>
+              <strong>Run:</strong> <a href="${{ steps.meta.outputs.run_url }}">${{ steps.meta.outputs.run_url }}</a>
+            </p>
+
+      - name: Email on failure
+        if: always() && (steps.publish.outcome == 'failure' || steps.deploy.outcome == 'failure')
+        continue-on-error: true
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          secure: false
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          to: surajmarathe37@gmail.com
+          from: ExpenseTracker CI <${{ secrets.MAIL_USERNAME }}>
+          subject: ❌ PIPELINE NOTIFICATION — FAILED
+          html_body: |
+            <h2>❌ PIPELINE NOTIFICATION ❌</h2>
+            <p><strong>❌ Deployment Failed</strong></p>
+            <p>
+              <strong>Website:</strong> <a href="https://expensetracker.runasp.net">https://expensetracker.runasp.net</a><br/>
+              <strong>Pipeline:</strong> ${{ steps.meta.outputs.pipeline }}<br/>
+              <strong>Status:</strong> 🔴 FAILED<br/>
+              <strong>Commit ID:</strong> #${{ steps.meta.outputs.commit_id }}<br/>
+              <strong>Commit Message:</strong> ${{ steps.meta.outputs.commit_msg }}<br/>
+              <strong>Branch:</strong> ${{ steps.meta.outputs.branch }}<br/>
+              <strong>Date &amp; Time:</strong> ${{ steps.meta.outputs.datetime }} (IST)<br/>
+              <strong>Run:</strong> <a href="${{ steps.meta.outputs.run_url }}">${{ steps.meta.outputs.run_url }}</a>
+            </p>

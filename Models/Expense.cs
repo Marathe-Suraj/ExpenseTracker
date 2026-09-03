@@ -13,7 +13,7 @@ namespace ExpenseTracker.Models
         [Range(typeof(decimal), "0.01", "1000000000", ErrorMessage = "Amount must be greater than 0")]
         public decimal Amount { get; set; }
         [StringLength(200, ErrorMessage = "Description cannot exceed 200 characters")]
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
         [DataType(DataType.Date)]
         [Required(ErrorMessage = "Date is required")]
         public DateTime ExpenseDate { get; set; }

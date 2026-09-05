@@ -32,7 +32,8 @@ namespace ExpenseTracker.Services
         {
             try
             {
-                return await _repository.GetAllForUserAsync(userId);
+                var allCategories = await _repository.GetAllForUserAsync(userId);
+                return allCategories.Where(c => c.IsActive == true);
             }
             catch (Exception ex)
             {

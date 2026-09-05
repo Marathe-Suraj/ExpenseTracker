@@ -32,23 +32,15 @@ jobs:
           --runtime win-x86
           --self-contained false
 
-      # MonsterASP shared hosting allows contentPath deploy only (not recycleApp / app pool stop).
-      # Official approach: https://help.monsterasp.net/books/deploy/page/how-to-deploy-website-content-from-command-line
       - name: Deploy to MonsterASP.NET via Web Deploy
         id: deploy
-        shell: pwsh
-        env:
-          WEBSITE_NAME: ${{ secrets.WEBSITE_NAME }}
-          SERVER_COMPUTER_NAME: ${{ secrets.SERVER_COMPUTER_NAME }}
-          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
-          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
-        run: |
-          & "$env:GITHUB_WORKSPACE\.github\scripts\Deploy-MonsterAsp.ps1" `
-            -SourcePath (Join-Path $env:GITHUB_WORKSPACE 'publish') `
-            -WebsiteName $env:WEBSITE_NAME `
-            -ServerComputerName $env:SERVER_COMPUTER_NAME `
-            -Username $env:SERVER_USERNAME `
-            -Password $env:SERVER_PASSWORD
+        uses: rasmusbuchholdt/simply-web-deploy@2.2.0
+        with:
+          website-name: ${{ secrets.WEBSITE_NAME }}
+          server-computer-name: ${{ secrets.SERVER_COMPUTER_NAME }}
+          server-username: ${{ secrets.SERVER_USERNAME }}
+          server-password: ${{ secrets.SERVER_PASSWORD }}
+          source-path: '\publish\'
 
       - name: Prepare email details
         if: always()

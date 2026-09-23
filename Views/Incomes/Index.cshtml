@@ -1,0 +1,133 @@
+@model IEnumerable<ExpenseTracker.Models.Income>
+@{
+    ViewData["Title"] = "Income";
+}
+<div class="dashboard-hero mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <div class="hero-subtitle">Cash Flow</div>
+        <h2 class="hero-title">Income</h2>
+        <div class="hero-description">Track money received and compare it with expenses.</div>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#incomeModal" id="btnAddIncome">Add Income</button>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<form method="get" class="card card-body mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label" for="fromDate">From</label>
+            <input id="fromDate" type="date" class="form-control" name="fromDate" value="@(((DateTime?)ViewBag.FromDate)?.ToString("yyyy-MM-dd"))">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="toDate">To</label>
+            <input id="toDate" type="date" class="form-control" name="toDate" value="@(((DateTime?)ViewBag.ToDate)?.ToString("yyyy-MM-dd"))">
+        </div>
+        <div class="col"><button class="btn btn-outline-primary" type="submit">Filter</button></div>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="text-center text-muted py-5">No income found.</div>
+}
+else
+{
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Source</th>
+                        <th>Description</th>
+                        <th class="text-end">Amount</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var i in Model)
+                {
+                    <tr>
+                        <td>@i.IncomeDate.ToString("dd/MM/yyyy")</td>
+                        <td>@i.Source</td>
+                        <td>@i.Description</td>
+                        <td class="text-end">@i.Amount.ToString("C2")</td>
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm btn-outline-primary btn-edit-income"
+                                    data-id="@i.IncomeId"
+                                    data-source="@i.Source"
+                                    data-description="@i.Description"
+                                    data-amount="@i.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                    data-date="@i.IncomeDate.ToString("yyyy-MM-dd")">Edit</button>
+                            <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Delete this income?');">
+                                <input type="hidden" name="id" value="@i.IncomeId">
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<div class="modal fade" id="incomeModal" tabindex="-1" aria-labelledby="incomeModalTitle" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Save" method="post" id="incomeForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="incomeModalTitle">Income</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="IncomeId" id="IncomeId" value="0">
+                    <label class="form-label" for="IncomeDate">Date</label>
+                    <input required type="date" class="form-control mb-3" name="IncomeDate" id="IncomeDate">
+                    <label class="form-label" for="Source">Source</label>
+                    <input required maxlength="200" class="form-control mb-3" name="Source" id="Source">
+                    <label class="form-label" for="Amount">Amount</label>
+                    <input required type="number" min="0.01" step="0.01" class="form-control mb-3" name="Amount" id="Amount">
+                    <label class="form-label" for="Description">Description</label>
+                    <textarea maxlength="500" class="form-control" name="Description" id="Description"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    function resetIncomeForm() {
+        var form = document.getElementById('incomeForm');
+        form.reset();
+        document.getElementById('IncomeId').value = '0';
+        document.getElementById('IncomeDate').value = new Date().toISOString().slice(0, 10);
+    }
+    document.getElementById('btnAddIncome')?.addEventListener('click', resetIncomeForm);
+    document.querySelectorAll('.btn-edit-income').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.getElementById('IncomeId').value = btn.dataset.id;
+            document.getElementById('Source').value = btn.dataset.source || '';
+            document.getElementById('Description').value = btn.dataset.description || '';
+            document.getElementById('Amount').value = btn.dataset.amount || '';
+            document.getElementById('IncomeDate').value = btn.dataset.date || '';
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('incomeModal')).show();
+        });
+    });
+})();
+</script>
+}

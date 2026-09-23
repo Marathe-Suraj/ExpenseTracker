@@ -21,7 +21,7 @@
                 <i class="bi bi-list-ul me-1"></i> 
                 <span class="d-none d-sm-inline">View Details</span>
             </button>
-            <a href="/Expenses" class="btn btn-primary btn-modern">
+            <a href="/Expenses?openCreate=1" class="btn btn-primary btn-modern">
                 <i class="bi bi-plus-lg me-1"></i>
                 <span class="d-none d-sm-inline">Add Expense</span>
             </a>
@@ -34,14 +34,11 @@
 
 <!-- Quick Stats Cards -->
 <div class="row g-4 mb-4">
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md">
         <div class="stat-card stat-card-today fade-in" data-delay="100">
             <div class="stat-card-header">
                 <div class="stat-icon stat-icon-today">
                     <i class="bi bi-brightness-high"></i>
-                </div>
-                <div class="stat-trend">
-                    <i class="bi bi-arrow-up-short text-success"></i>
                 </div>
             </div>
             <div class="stat-content">
@@ -51,37 +48,70 @@
             </div>
         </div>
     </div>
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md">
         <div class="stat-card stat-card-month fade-in" data-delay="200">
             <div class="stat-card-header">
                 <div class="stat-icon stat-icon-month">
                     <i class="bi bi-calendar-month"></i>
                 </div>
-                <div class="stat-trend">
-                    <i class="bi bi-arrow-up-short text-warning"></i>
+                @{
+                    var mom = Model.MonthOverMonthChangePercent;
+                    var momUp = mom > 0;
+                    var momFlat = mom == 0;
+                    var momClass = momFlat ? "text-muted" : (momUp ? "text-danger" : "text-success");
+                    var momIcon = momFlat ? "bi-dash" : (momUp ? "bi-arrow-up-short" : "bi-arrow-down-short");
+                }
+                <div class="stat-trend" title="vs last month">
+                    <i class="bi @momIcon @momClass"></i>
+                    <span class="small @momClass">@(momFlat ? "0%" : $"{(momUp ? "+" : "")}{mom:0.#}%")</span>
                 </div>
             </div>
             <div class="stat-content">
                 <div class="stat-label">This Month</div>
                 <div class="stat-value" data-counter data-target="@Model.TotalThisMonth.ToString(System.Globalization.CultureInfo.InvariantCulture)">@Model.TotalThisMonth.ToString("C2")</div>
-                <div class="stat-subtitle">Monthly total</div>
+                <div class="stat-subtitle">vs last month @Model.TotalLastMonth.ToString("C2")</div>
             </div>
         </div>
     </div>
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md">
         <div class="stat-card stat-card-year fade-in" data-delay="300">
             <div class="stat-card-header">
                 <div class="stat-icon stat-icon-year">
                     <i class="bi bi-graph-up"></i>
-                </div>
-                <div class="stat-trend">
-                    <i class="bi bi-arrow-up-short text-info"></i>
                 </div>
             </div>
             <div class="stat-content">
                 <div class="stat-label">This Year</div>
                 <div class="stat-value" data-counter data-target="@Model.TotalThisYear.ToString(System.Globalization.CultureInfo.InvariantCulture)">@Model.TotalThisYear.ToString("C2")</div>
                 <div class="stat-subtitle">Annual spending</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md"><div class="stat-card fade-in"><div class="stat-content"><div class="stat-label">Income This Month</div><div class="stat-value text-success">@Model.TotalIncomeThisMonth.ToString("C2")</div><div class="stat-subtitle">Money received</div></div></div></div>
+    <div class="col-12 col-md"><div class="stat-card fade-in"><div class="stat-content"><div class="stat-label">Net This Month</div><div class="stat-value @(Model.NetThisMonth>=0?"text-success":"text-danger")">@Model.NetThisMonth.ToString("C2")</div><div class="stat-subtitle">Income minus expenses</div></div></div></div>
+</div>
+
+<div class="analytics-section mb-4">
+    <div class="section-header mb-3 d-flex justify-content-between"><div><h4 class="section-title">Budget Progress</h4><p class="section-subtitle">Current month category budgets</p></div><a asp-controller="Budgets" asp-action="Index" class="btn btn-outline-primary btn-sm">Manage Budgets</a></div>
+    <div class="card card-body">
+    @if(!Model.BudgetProgress.Any()){<div class="text-center text-muted py-3">No budgets set for this month.</div>}
+    @foreach(var b in Model.BudgetProgress){var width=Math.Min(100,b.PercentUsed);<div class="mb-3"><div class="d-flex justify-content-between"><strong>@b.CategoryName</strong><span class="@(b.IsOverBudget?"text-danger":"")">@b.SpentAmount.ToString("C2") / @b.BudgetAmount.ToString("C2")</span></div><div class="progress mt-2"><div class="progress-bar @(b.IsOverBudget?"bg-danger":"")" style="width:@width%"></div></div></div>}
+    </div>
+</div>
+
+<!-- Daily Trend -->
+<div class="analytics-section mb-4">
+    <div class="section-header mb-3">
+        <h4 class="section-title">Daily Spending Trend</h4>
+        <p class="section-subtitle">Day-by-day totals for the current month</p>
+    </div>
+    <div class="chart-card fade-in" data-delay="350">
+        <div class="chart-container" style="min-height: 280px;">
+            <canvas id="dailyTrendChart"></canvas>
+            <div id="dailyTrendChartEmpty" class="chart-empty d-none">
+                <div class="empty-icon"><i class="bi bi-graph-up"></i></div>
+                <div class="empty-title">No spending this month</div>
+                <div class="empty-subtitle">Add expenses to see your daily trend</div>
             </div>
         </div>
     </div>
@@ -284,6 +314,9 @@
 <script id="monthlyValues" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyCategoryTotals.Select(x => x.TotalAmount)))</script>
 <script id="yearlyLabels" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.YearlyCategoryTotals.Select(x => x.CategoryName)))</script>
 <script id="yearlyValues" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.YearlyCategoryTotals.Select(x => x.TotalAmount)))</script>
+<script id="trendLabels" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyTrend.Select(x => x.DateLabel)))</script>
+<script id="trendValues" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyTrend.Select(x => x.TotalAmount)))</script>
+<script id="currencySymbol" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(System.Globalization.CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol))</script>
 
 @section Styles{
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />

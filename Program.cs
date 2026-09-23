@@ -1,4 +1,5 @@
 using System.Globalization;
+using Microsoft.AspNetCore.Mvc;
 using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +13,10 @@ CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 QuestPDF.Settings.License = LicenseType.Community;
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+});
 
 // Add localization services
 builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -52,10 +56,20 @@ builder.Services.AddSingleton<ExpenseTracker.Data.IDbConnectionFactory, ExpenseT
 builder.Services.AddScoped<ExpenseTracker.Data.Repositories.IUserRepository, ExpenseTracker.Data.Repositories.UserRepository>();
 builder.Services.AddScoped<ExpenseTracker.Data.Repositories.ICategoryRepository, ExpenseTracker.Data.Repositories.CategoryRepository>();
 builder.Services.AddScoped<ExpenseTracker.Data.Repositories.IExpenseRepository, ExpenseTracker.Data.Repositories.ExpenseRepository>();
+builder.Services.AddScoped<ExpenseTracker.Data.Repositories.IBudgetRepository, ExpenseTracker.Data.Repositories.BudgetRepository>();
+builder.Services.AddScoped<ExpenseTracker.Data.Repositories.IIncomeRepository, ExpenseTracker.Data.Repositories.IncomeRepository>();
+builder.Services.AddScoped<ExpenseTracker.Data.Repositories.IRecurringExpenseRepository, ExpenseTracker.Data.Repositories.RecurringExpenseRepository>();
+builder.Services.AddScoped<ExpenseTracker.Data.Repositories.IHouseholdRepository, ExpenseTracker.Data.Repositories.HouseholdRepository>();
 builder.Services.AddScoped<ExpenseTracker.Services.IAuthService, ExpenseTracker.Services.AuthService>();
 builder.Services.AddScoped<ExpenseTracker.Services.ICategoryService, ExpenseTracker.Services.CategoryService>();
 builder.Services.AddScoped<ExpenseTracker.Services.IExpenseService, ExpenseTracker.Services.ExpenseService>();
 builder.Services.AddScoped<ExpenseTracker.Services.IDashboardService, ExpenseTracker.Services.DashboardService>();
+builder.Services.AddScoped<ExpenseTracker.Services.IBudgetService, ExpenseTracker.Services.BudgetService>();
+builder.Services.AddScoped<ExpenseTracker.Services.IIncomeService, ExpenseTracker.Services.IncomeService>();
+builder.Services.AddScoped<ExpenseTracker.Services.IRecurringExpenseService, ExpenseTracker.Services.RecurringExpenseService>();
+builder.Services.AddScoped<ExpenseTracker.Services.IRecurringExpenseGenerator, ExpenseTracker.Services.RecurringExpenseGenerator>();
+builder.Services.AddScoped<ExpenseTracker.Services.IHouseholdService, ExpenseTracker.Services.HouseholdService>();
+builder.Services.AddScoped<ExpenseTracker.Services.IReportsService, ExpenseTracker.Services.ReportsService>();
 
 var app = builder.Build();
 

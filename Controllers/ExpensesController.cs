@@ -13,12 +13,16 @@ namespace ExpenseTracker.Controllers
         private readonly IExpenseService _expenseService;
         private readonly ICategoryService _categoryService;
         private readonly IAuthService _authService;
+        private readonly IWebHostEnvironment _environment;
+        private readonly IRecurringExpenseGenerator _recurringGenerator;
 
-        public ExpensesController(IExpenseService expenseService, ICategoryService categoryService, IAuthService authService)
+        public ExpensesController(IExpenseService expenseService, ICategoryService categoryService, IAuthService authService, IWebHostEnvironment environment, IRecurringExpenseGenerator recurringGenerator)
         {
             _expenseService = expenseService;
             _categoryService = categoryService;
             _authService = authService;
+            _environment = environment;
+            _recurringGenerator = recurringGenerator;
         }
 
         private async Task<SelectList> BuildCategoriesSelectList(int userId)
@@ -35,9 +39,13 @@ namespace ExpenseTracker.Controllers
         public async Task<IActionResult> Index([FromQuery] ExpenseFilterViewModel filter)
         {
             var userId = _authService.GetCurrentUserId()!.Value;
-            // Load full dataset for client-side DataTables so all entries are available for paging/search
-            filter.Page = 1;
-            filter.PageSize = int.MaxValue;
+            await _recurringGenerator.GenerateAsync(userId);
+            if (!filter.IsValid())
+            {
+                ModelState.AddModelError(string.Empty, "Invalid filter range. Check dates and amounts.");
+            }
+            if (filter.Page < 1) filter.Page = 1;
+            if (filter.PageSize < 1 || filter.PageSize > 100) filter.PageSize = 25;
             filter.Categories = await BuildCategoriesSelectList(userId);
             var result = await _expenseService.SearchAsync(userId, filter);
             ViewBag.Paged = result;
@@ -51,8 +59,8 @@ namespace ExpenseTracker.Controllers
         public async Task<IActionResult> List([FromQuery] ExpenseFilterViewModel filter)
         {
             var userId = _authService.GetCurrentUserId()!.Value;
-            filter.Page = 1;
-            filter.PageSize = int.MaxValue;
+            if (filter.Page < 1) filter.Page = 1;
+            if (filter.PageSize < 1 || filter.PageSize > 100) filter.PageSize = 25;
             filter.Categories = await BuildCategoriesSelectList(userId);
             var result = await _expenseService.SearchAsync(userId, filter);
             ViewBag.Paged = result;
@@ -75,7 +83,8 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Expense model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Expense model, IFormFile? receipt)
         {
             var userId = _authService.GetCurrentUserId()!.Value;
             // Force new records to active
@@ -95,6 +104,7 @@ namespace ExpenseTracker.Controllers
             }
             model.UserId = userId;
             model.CreatedDate = DateTime.UtcNow;
+            if (!await SaveReceiptAsync(userId, receipt, model)) return await InvalidExpenseAsync(model, userId);
             await _expenseService.CreateAsync(model);
             if (IsAjaxRequest()) return Json(new { success = true });
             return RedirectToAction(nameof(Index));
@@ -111,7 +121,8 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(Expense model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Expense model, IFormFile? receipt)
         {
             var userId = _authService.GetCurrentUserId()!.Value;
             if (!ModelState.IsValid)
@@ -130,6 +141,10 @@ namespace ExpenseTracker.Controllers
             model.UserId = userId;
             // Preserve active state; editing should not deactivate
             model.IsActive = true;
+            var existing = await _expenseService.GetAsync(userId, model.ExpenseId);
+            if (existing == null) return NotFound();
+            model.ReceiptPath = existing.ReceiptPath;
+            if (!await SaveReceiptAsync(userId, receipt, model)) return await InvalidExpenseAsync(model, userId);
             await _expenseService.UpdateAsync(model);
             if (IsAjaxRequest()) return Json(new { success = true });
             return RedirectToAction(nameof(Index));
@@ -145,6 +160,7 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userId = _authService.GetCurrentUserId()!.Value;
@@ -175,6 +191,33 @@ namespace ExpenseTracker.Controllers
             var ts = DateTime.Now.ToString("ddMMyyyyhhmmss");
             var filename = $"ExpensesReport_{ts}.pdf";
             return File(bytes, "application/pdf", filename);
+        }
+
+        private async Task<bool> SaveReceiptAsync(int userId, IFormFile? receipt, Expense model)
+        {
+            if (receipt == null || receipt.Length == 0) return true;
+            var allowed = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["image/jpeg"] = ".jpg", ["image/png"] = ".png", ["application/pdf"] = ".pdf"
+            };
+            if (receipt.Length > 5 * 1024 * 1024 || !allowed.TryGetValue(receipt.ContentType, out var extension))
+            {
+                ModelState.AddModelError("receipt", "Receipt must be a JPG, PNG or PDF no larger than 5 MB.");
+                return false;
+            }
+            var folder = Path.Combine(_environment.WebRootPath, "uploads", "receipts", userId.ToString());
+            Directory.CreateDirectory(folder);
+            var fileName = $"{Guid.NewGuid():N}{extension}";
+            await using var stream = System.IO.File.Create(Path.Combine(folder, fileName));
+            await receipt.CopyToAsync(stream);
+            model.ReceiptPath = $"/uploads/receipts/{userId}/{fileName}";
+            return true;
+        }
+
+        private async Task<IActionResult> InvalidExpenseAsync(Expense model, int userId)
+        {
+            ViewBag.Categories = await BuildCategoriesSelectList(userId);
+            return IsAjaxRequest() ? PartialView("_CreateEditModal", model) : View(model);
         }
     }
 }

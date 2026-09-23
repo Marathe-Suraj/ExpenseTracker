@@ -79,7 +79,7 @@
                 </div>
                 <div class="col-md-6 col-lg-2">
                     <div class="form-group">
-                        <label class="form-label">
+                        <label class="form-label" for="fromDate">
                             <i class="bi bi-calendar-event me-1"></i>From Date
                         </label>
                         <div class="input-group">
@@ -92,7 +92,7 @@
                 </div>
                 <div class="col-md-6 col-lg-2">
                     <div class="form-group">
-                        <label class="form-label">
+                        <label class="form-label" for="toDate">
                             <i class="bi bi-calendar-check me-1"></i>To Date
                         </label>
                         <div class="input-group">
@@ -103,16 +103,39 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-6 col-lg-2">
+                    <div class="form-group">
+                        <label class="form-label" for="minAmount">Min Amount</label>
+                        <input id="minAmount" type="number" step="0.01" min="0.01" class="form-control modern-input" name="MinAmount" value="@(filter.MinAmount?.ToString(System.Globalization.CultureInfo.InvariantCulture))" placeholder="0.00" />
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-2">
+                    <div class="form-group">
+                        <label class="form-label" for="maxAmount">Max Amount</label>
+                        <input id="maxAmount" type="number" step="0.01" min="0.01" class="form-control modern-input" name="MaxAmount" value="@(filter.MaxAmount?.ToString(System.Globalization.CultureInfo.InvariantCulture))" placeholder="0.00" />
+                    </div>
+                </div>
                 <div class="col-lg-2 d-flex align-items-end">
                     <div class="form-group w-100">
-                        <button class="btn btn-primary btn-modern w-100" id="filterGoBtn">
+                        <button class="btn btn-primary btn-modern w-100" id="filterGoBtn" type="submit">
                             <i class="bi bi-search me-1"></i>Apply Filters
                         </button>
                     </div>
                 </div>
             </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <input type="hidden" name="QuickFilter" id="quickFilterInput" value="@filter.QuickFilter" />
+                @{
+                    var qf = filter.QuickFilter?.ToLowerInvariant();
+                }
+                <button type="button" class="btn btn-sm @(qf=="today"?"btn-primary":"btn-outline-secondary") quick-filter-btn" data-quick="today">Today</button>
+                <button type="button" class="btn btn-sm @(qf=="week"?"btn-primary":"btn-outline-secondary") quick-filter-btn" data-quick="week">This Week</button>
+                <button type="button" class="btn btn-sm @(qf=="month"?"btn-primary":"btn-outline-secondary") quick-filter-btn" data-quick="month">This Month</button>
+                <button type="button" class="btn btn-sm @(qf=="year"?"btn-primary":"btn-outline-secondary") quick-filter-btn" data-quick="year">This Year</button>
+            </div>
             
-            @if (!string.IsNullOrEmpty(filter.Search) || filter.CategoryId.HasValue || filter.FromDate.HasValue || filter.ToDate.HasValue)
+            @if (filter.HasActiveFilters)
             {
                 <div class="filter-active mt-3">
                     <div class="d-flex align-items-center justify-content-between">
@@ -129,6 +152,14 @@
                             @if (filter.FromDate.HasValue || filter.ToDate.HasValue)
                             {
                                 <span class="badge bg-secondary me-1">Date Range</span>
+                            }
+                            @if (filter.MinAmount.HasValue || filter.MaxAmount.HasValue)
+                            {
+                                <span class="badge bg-secondary me-1">Amount Range</span>
+                            }
+                            @if (!string.IsNullOrEmpty(filter.QuickFilter))
+                            {
+                                <span class="badge bg-secondary me-1">@filter.QuickFilter</span>
                             }
                         </div>
                         <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm">

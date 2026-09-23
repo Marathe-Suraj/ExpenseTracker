@@ -19,6 +19,7 @@ namespace ExpenseTracker.Models
         public DateTime ExpenseDate { get; set; }
         public DateTime CreatedDate { get; set; }
         public bool IsActive { get; set; }
+        public string? ReceiptPath { get; set; }
     }
 }
 

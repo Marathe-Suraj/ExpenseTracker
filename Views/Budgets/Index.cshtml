@@ -1,0 +1,88 @@
+@model IEnumerable<ExpenseTracker.Models.Budget>
+@{
+    ViewData["Title"] = "Budgets";
+    var categories = (IEnumerable<ExpenseTracker.Models.Category>)ViewBag.Categories;
+    int year = ViewBag.Year;
+    int month = ViewBag.Month;
+}
+<div class="dashboard-hero mb-4">
+    <div class="hero-subtitle">Planning</div>
+    <h2 class="hero-title">Monthly Budgets</h2>
+    <div class="hero-description">Set category limits and track current spending.</div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<form method="get" class="card card-body mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label" for="year">Year</label>
+            <input id="year" class="form-control" type="number" name="year" value="@year" min="2000" max="2100">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="month">Month</label>
+            <input id="month" class="form-control" type="number" name="month" value="@month" min="1" max="12">
+        </div>
+        <div class="col"><button class="btn btn-outline-primary" type="submit">View</button></div>
+    </div>
+</form>
+
+<form asp-action="Upsert" method="post" class="card card-body mb-4">
+    <input type="hidden" name="Year" value="@year">
+    <input type="hidden" name="Month" value="@month">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label" for="CategoryId">Category</label>
+            <select class="form-select" name="CategoryId" id="CategoryId" required>
+                <option value="">Select category</option>
+                @foreach (var c in categories.Where(x => x.IsActive))
+                {
+                    <option value="@c.CategoryId">@c.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="Amount">Budget amount</label>
+            <input id="Amount" class="form-control" name="Amount" type="number" min="0.01" step="0.01" required>
+        </div>
+        <div class="col"><button class="btn btn-primary" type="submit">Save Budget</button></div>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="text-center text-muted py-5">No budgets set for this month.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var b in Model)
+        {
+            var percent = b.Amount > 0 ? Math.Min(100, b.SpentAmount / b.Amount * 100) : 0;
+            <div class="col-md-6">
+                <div class="card card-body">
+                    <div class="d-flex justify-content-between">
+                        <strong>@b.CategoryName</strong>
+                        <span>@b.SpentAmount.ToString("C2") / @b.Amount.ToString("C2")</span>
+                    </div>
+                    <div class="progress my-3">
+                        <div class="progress-bar @(b.SpentAmount > b.Amount ? "bg-danger" : "")" style="width:@percent.ToString(System.Globalization.CultureInfo.InvariantCulture)%"></div>
+                    </div>
+                    <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this budget?');">
+                        <input type="hidden" name="id" value="@b.BudgetId">
+                        <input type="hidden" name="year" value="@year">
+                        <input type="hidden" name="month" value="@month">
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+}

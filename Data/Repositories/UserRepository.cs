@@ -51,6 +51,30 @@ namespace ExpenseTracker.Data.Repositories
                 throw;
             }
         }
+
+        public async Task<User?> GetByIdAsync(int userId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            return await connection.QueryFirstOrDefaultAsync<User>("dbo.usp_GetUserById", new { UserId = userId }, commandType: CommandType.StoredProcedure);
+        }
+
+        public async Task<bool> UpdateProfileAsync(int userId, string? email, string? fullName)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            return await connection.ExecuteScalarAsync<int>("dbo.usp_UpdateUserProfile", new { UserId = userId, Email = email, FullName = fullName }, commandType: CommandType.StoredProcedure) > 0;
+        }
+
+        public async Task<bool> UpdateSettingsAsync(int userId, string currency, string dateFormat, string language, bool emailNotifications, bool darkMode)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            return await connection.ExecuteScalarAsync<int>("dbo.usp_UpdateUserSettings", new { UserId = userId, Currency = currency, DateFormat = dateFormat, Language = language, EmailNotifications = emailNotifications, DarkMode = darkMode }, commandType: CommandType.StoredProcedure) > 0;
+        }
+
+        public async Task<bool> ChangePasswordAsync(int userId, string passwordHash)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            return await connection.ExecuteScalarAsync<int>("dbo.usp_ChangePassword", new { UserId = userId, PasswordHash = passwordHash }, commandType: CommandType.StoredProcedure) > 0;
+        }
     }
 }
 

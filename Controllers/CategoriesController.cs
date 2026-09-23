@@ -26,7 +26,7 @@ namespace ExpenseTracker.Controllers
         public async Task<IActionResult> Index()
         {
             var userId = _authService.GetCurrentUserId()!.Value;
-            var categories = await _categoryService.GetAllAsync(userId);
+            var categories = await _categoryService.GetAllAsync(userId, activeOnly: false);
             return View(categories);
         }
 
@@ -34,7 +34,7 @@ namespace ExpenseTracker.Controllers
         public async Task<IActionResult> List()
         {
             var userId = _authService.GetCurrentUserId()!.Value;
-            var categories = await _categoryService.GetAllAsync(userId);
+            var categories = await _categoryService.GetAllAsync(userId, activeOnly: false);
             return PartialView("_CategoryList", categories);
         }
 
@@ -46,6 +46,7 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category model)
         {
             // Set user context for user-category mapping
@@ -74,6 +75,7 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Category model)
         {
             // Set user context for user-category mapping
@@ -101,6 +103,7 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userId = _authService.GetCurrentUserId()!.Value;
@@ -110,6 +113,7 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleStatus(int id)
         {
             var userId = _authService.GetCurrentUserId()!.Value;

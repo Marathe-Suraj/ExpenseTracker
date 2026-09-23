@@ -3,22 +3,43 @@
 @{
     var paged = (PagedResult<ExpenseTracker.Models.Expense>)ViewBag.Paged;
     var filter = (ExpenseFilterViewModel)ViewBag.Filter;
+    var hasItems = Model != null && Model.Any();
+    var items = Model ?? Enumerable.Empty<ExpenseTracker.Models.Expense>();
 }
 
+@if (!hasItems)
+{
+    <div class="empty-state text-center py-5 fade-in">
+        <div class="empty-icon mb-3">
+            <i class="bi bi-receipt fs-1 text-muted"></i>
+        </div>
+        <div class="fw-semibold fs-5">No expenses found</div>
+        <div class="text-muted mb-3">@(filter.HasActiveFilters ? "Try adjusting your filters or clear them to see all expenses." : "Add your first expense to start tracking.")</div>
+        @if (filter.HasActiveFilters)
+        {
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm me-2">Clear Filters</a>
+        }
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#expenseModal" data-url="@Url.Action("Create","Expenses")">
+            <i class="bi bi-plus-lg me-1"></i>Add Expense
+        </button>
+    </div>
+}
+else
+{
 <!-- Desktop View with Toggle -->
 <div class="d-none d-lg-block">
     <div class="expenses-table-card">
         <div class="table-header">
             <div class="table-info">
                 <h6 class="table-title">Expense Records</h6>
-                <p class="table-subtitle">@Model.Count() expenses found</p>
+                <p class="table-subtitle">@paged.TotalCount expenses found</p>
             </div>
             <div class="table-actions">
                 <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-outline-secondary btn-sm active" id="tableViewBtn" data-view="table">
+                    <button type="button" class="btn btn-outline-secondary btn-sm active" id="tableViewBtn" data-view="table" aria-label="Table view">
                         <i class="bi bi-list"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="cardViewBtn" data-view="cards">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="cardViewBtn" data-view="cards" aria-label="Card view">
                         <i class="bi bi-grid-3x3-gap"></i>
                     </button>
                 </div>
@@ -37,7 +58,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var e in Model)
+                    @foreach (var e in items)
                     {
                         <tr class="expense-row">
                             <td>
@@ -58,6 +79,7 @@
                             <td>
                                 <div class="description-cell">
                                     @e.Description
+                                    @if (!string.IsNullOrWhiteSpace(e.ReceiptPath)) { <a class="ms-2" href="@e.ReceiptPath" target="_blank" rel="noopener" title="View receipt"><i class="bi bi-paperclip"></i></a> }
                                 </div>
                             </td>
                             <td class="text-center">
@@ -79,7 +101,7 @@
         <!-- Desktop Card Grid View (initially hidden) -->
         <div class="d-none" id="cardView">
             <div class="row g-3">
-                @foreach (var e in Model)
+                @foreach (var e in items)
                 {
                     <div class="col-md-3">
                         <div class="expense-card">
@@ -92,6 +114,7 @@
                             </div>
                             <div class="expense-card-body">
                                 <div class="expense-description">@e.Description</div>
+                                @if (!string.IsNullOrWhiteSpace(e.ReceiptPath)) { <a href="@e.ReceiptPath" target="_blank" rel="noopener"><i class="bi bi-paperclip"></i> Receipt</a> }
                                 <div class="expense-category">
                                     <i class="bi bi-tag-fill me-1"></i>
                                     @(((IDictionary<int, string>)ViewBag.CatLookup)[e.CategoryId])
@@ -116,7 +139,7 @@
 <!-- Tablet Card Grid View -->
 <div class="d-none d-md-block d-lg-none">
     <div class="row g-3">
-        @foreach (var e in Model)
+        @foreach (var e in items)
         {
             <div class="col-md-6">
                 <div class="expense-card">
@@ -129,6 +152,7 @@
                     </div>
                     <div class="expense-card-body">
                         <div class="expense-description">@e.Description</div>
+                        @if (!string.IsNullOrWhiteSpace(e.ReceiptPath)) { <a href="@e.ReceiptPath" target="_blank" rel="noopener"><i class="bi bi-paperclip"></i> Receipt</a> }
                         <div class="expense-category">
                             <i class="bi bi-tag-fill me-1"></i>
                             @(((IDictionary<int, string>)ViewBag.CatLookup)[e.CategoryId])
@@ -151,12 +175,13 @@
 <!-- Mobile List View -->
 <div class="d-md-none">
     <div class="mobile-expense-list">
-        @foreach (var e in Model)
+        @foreach (var e in items)
         {
             <div class="mobile-expense-item">
                 <div class="mobile-expense-main">
                     <div class="mobile-expense-info">
                         <div class="mobile-expense-description">@e.Description</div>
+                        @if (!string.IsNullOrWhiteSpace(e.ReceiptPath)) { <a href="@e.ReceiptPath" target="_blank" rel="noopener"><i class="bi bi-paperclip"></i> Receipt</a> }
                         <div class="mobile-expense-meta">
                             <span class="mobile-date">
                                 <i class="bi bi-calendar3 me-1"></i>
@@ -184,14 +209,20 @@
 </div>
 
 <nav id="serverPagination" aria-label="Page navigation" class="mt-3">
-    <ul class="pagination">
-        @for (int p = 1; p <= paged.TotalPages; p++)
+    @{
+        var totalPages = Math.Max(1, paged.TotalPages);
+    }
+    @if (totalPages > 1)
+    {
+    <ul class="pagination flex-wrap">
+        @for (int p = 1; p <= totalPages; p++)
         {
             <li class="page-item @(p == paged.Page ? "active" : "")">
-                <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-pageSize="@paged.PageSize" asp-route-search="@filter.Search" asp-route-categoryId="@filter.CategoryId" asp-route-fromDate="@filter.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@filter.ToDate?.ToString("yyyy-MM-dd")">@p</a>
+                <a class="page-link expense-page-link" href="#" data-page="@p">@p</a>
             </li>
         }
     </ul>
+    }
 </nav>
-
+}
 

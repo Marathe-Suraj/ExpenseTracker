@@ -31,6 +31,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
 
 <div class="row g-4">
     <div class="col-lg-4">
@@ -40,8 +44,8 @@
                     <i class="bi bi-person-fill"></i>
                 </div>
                 <div class="avatar-actions">
-                    <button class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-camera me-1"></i>Change Photo
+                    <button class="btn btn-outline-secondary btn-sm" disabled>
+                        <i class="bi bi-camera me-1"></i>Photo upload coming soon
                     </button>
                 </div>
             </div>
@@ -122,10 +126,12 @@
                         <div class="security-title">Password</div>
                         <div class="security-description">Change your account password</div>
                     </div>
-                    <button class="btn btn-outline-primary btn-modern">
-                        <i class="bi bi-key me-1"></i>
-                        Change Password
-                    </button>
+                    <form asp-action="ChangePassword" method="post" class="row g-2 mt-2">
+                        <div class="col-md-4"><input type="password" required class="form-control" name="CurrentPassword" placeholder="Current password"></div>
+                        <div class="col-md-4"><input type="password" required minlength="8" class="form-control" name="NewPassword" placeholder="New password"></div>
+                        <div class="col-md-4"><input type="password" required minlength="8" class="form-control" name="ConfirmPassword" placeholder="Confirm password"></div>
+                        <div class="col-12"><button class="btn btn-outline-primary btn-modern"><i class="bi bi-key me-1"></i>Change Password</button></div>
+                    </form>
                 </div>
                 
                 <div class="security-item">
@@ -133,9 +139,9 @@
                         <div class="security-title">Two-Factor Authentication</div>
                         <div class="security-description">Add an extra layer of security to your account</div>
                     </div>
-                    <button class="btn btn-outline-success btn-modern">
+                    <button class="btn btn-outline-secondary btn-modern" disabled>
                         <i class="bi bi-shield-check me-1"></i>
-                        Enable 2FA
+                        Coming soon
                     </button>
                 </div>
             </div>

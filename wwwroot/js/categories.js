@@ -108,21 +108,26 @@ window.initializeCategoriesPage = function(){
             data: { id: categoryId },
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         }).done(function(resp){
-            if (resp && resp.success) {
-                // Show success message if available
-                if (resp.message) {
-                    // You can add a toast notification here if you have one
-                    console.log(resp.message);
+                if (resp && resp.success) {
+                if (resp.message && window.Toast) {
+                    window.Toast.show(resp.message, 'success');
                 }
-                // Refresh the categories list to show updated status
                 refreshCategoriesList();
             } else {
-                alert('Failed to update category status. Please try again.');
+                if (window.Toast) {
+                    window.Toast.show('Failed to update category status. Please try again.', 'danger');
+                } else {
+                    alert('Failed to update category status. Please try again.');
+                }
                 $btn.prop('disabled', false).html(originalHtml);
             }
         }).fail(function(xhr){
-            const errorMsg = xhr.responseJSON?.message || 'An error occurred while updating category status.';
-            alert(errorMsg);
+            const errorMsg = (xhr.responseJSON && xhr.responseJSON.message) || 'An error occurred while updating category status.';
+            if (window.Toast) {
+                window.Toast.show(errorMsg, 'danger');
+            } else {
+                alert(errorMsg);
+            }
             $btn.prop('disabled', false).html(originalHtml);
         });
     });

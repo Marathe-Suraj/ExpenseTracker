@@ -1,0 +1,12 @@
+@model ExpenseTracker.Models.Household
+@{ ViewData["Title"]="Household"; var members=(IEnumerable<ExpenseTracker.Models.HouseholdMember>)ViewBag.Members; var currentUserId=int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value); }
+<div class="dashboard-hero mb-4"><div class="hero-subtitle">Sharing</div><h2 class="hero-title">Household</h2><div class="hero-description">Manage your household membership and ownership.</div></div>
+@if(TempData["ErrorMessage"]!=null){<div class="alert alert-danger">@TempData["ErrorMessage"]</div>}
+@if(TempData["SuccessMessage"]!=null){<div class="alert alert-success">@TempData["SuccessMessage"]</div>}
+@if(Model==null){
+<div class="card card-body"><h5>Create a household</h5><form asp-action="Create" method="post" class="d-flex gap-2"><input required maxlength="200" class="form-control" name="name" placeholder="Household name"><button class="btn btn-primary">Create</button></form></div>
+}else{
+<div class="card card-body mb-4"><div class="d-flex justify-content-between"><div><h4>@Model.Name</h4><div class="text-muted">Created @Model.CreatedDate.ToString("dd/MM/yyyy")</div></div>@if(Model.OwnerUserId!=currentUserId){<form asp-action="Leave" method="post"><button class="btn btn-outline-danger">Leave</button></form>}</div></div>
+@if(Model.OwnerUserId==currentUserId){<form asp-action="Invite" method="post" class="card card-body mb-4"><h5>Add member</h5><div class="d-flex gap-2"><input required class="form-control" name="username" placeholder="Exact username"><button class="btn btn-primary">Invite</button></div></form>}
+<div class="card"><ul class="list-group list-group-flush">@foreach(var m in members){<li class="list-group-item d-flex justify-content-between"><span><strong>@m.Username</strong> @if(!string.IsNullOrWhiteSpace(m.FullName)){<small class="text-muted">(@m.FullName)</small>}</span><span class="badge bg-secondary">@m.Role</span></li>}</ul></div>
+}

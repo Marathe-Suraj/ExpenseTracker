@@ -35,7 +35,8 @@ namespace ExpenseTracker.Data.Repositories
                         Description = expense.Description,
                         ExpenseDate = expense.ExpenseDate,
                         CreatedDate = expense.CreatedDate,
-                        IsActive = expense.IsActive
+                        IsActive = expense.IsActive,
+                        ReceiptPath = expense.ReceiptPath
                     },
                     commandType: CommandType.StoredProcedure);
             }
@@ -61,7 +62,8 @@ namespace ExpenseTracker.Data.Repositories
                         Amount = expense.Amount,
                         Description = expense.Description,
                         ExpenseDate = expense.ExpenseDate,
-                        IsActive = expense.IsActive
+                        IsActive = expense.IsActive,
+                        ReceiptPath = expense.ReceiptPath
                     },
                     commandType: CommandType.StoredProcedure);
                 return rows > 0;

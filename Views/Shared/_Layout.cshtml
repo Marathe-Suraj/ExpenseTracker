@@ -51,6 +51,11 @@
                                 <span>Categories</span>
                             </a>
                         </li>
+                        <li class="nav-item"><a class="nav-link modern-nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString()=="Budgets"?"active":"")" asp-controller="Budgets" asp-action="Index"><i class="bi bi-piggy-bank me-2"></i><span>Budgets</span></a></li>
+                        <li class="nav-item"><a class="nav-link modern-nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString()=="Incomes"?"active":"")" asp-controller="Incomes" asp-action="Index"><i class="bi bi-cash-coin me-2"></i><span>Income</span></a></li>
+                        <li class="nav-item"><a class="nav-link modern-nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString()=="RecurringExpenses"?"active":"")" asp-controller="RecurringExpenses" asp-action="Index"><i class="bi bi-arrow-repeat me-2"></i><span>Recurring</span></a></li>
+                        <li class="nav-item"><a class="nav-link modern-nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString()=="Reports"?"active":"")" asp-controller="Reports" asp-action="Index"><i class="bi bi-bar-chart me-2"></i><span>Reports</span></a></li>
+                        <li class="nav-item"><a class="nav-link modern-nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString()=="Household"?"active":"")" asp-controller="Household" asp-action="Index"><i class="bi bi-people me-2"></i><span>Household</span></a></li>
                     </ul>
                     
                     <ul class="navbar-nav">
@@ -101,12 +106,14 @@
                         <span class="footer-brand-text">ExpenseTracker</span>
                     </div>
                     <div class="footer-info">
-                        <span>&copy; 2025 ExpenseTracker - Financial Management Made Simple</span>
+                        <span>&copy; @DateTime.Now.Year ExpenseTracker - Financial Management Made Simple</span>
                     </div>
                 </div>
             </div>
         </footer>
     </div>
+    <div id="toastHost" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;"></div>
+    <form id="antiForgeryForm" class="d-none">@Html.AntiForgeryToken()</form>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
@@ -118,7 +125,15 @@
         const applyTheme = t => document.documentElement.setAttribute('data-bs-theme', t);
         const saved = localStorage.getItem(key) || 'light';
         applyTheme(saved);
-        if (toggle) { toggle.checked = saved === 'dark'; toggle.addEventListener('change', () => { const t = toggle.checked ? 'dark' : 'light'; localStorage.setItem(key, t); applyTheme(t); }); }
+        if (toggle) {
+            toggle.setAttribute('aria-label', 'Toggle dark mode');
+            toggle.checked = saved === 'dark';
+            toggle.addEventListener('change', () => {
+                const t = toggle.checked ? 'dark' : 'light';
+                localStorage.setItem(key, t);
+                applyTheme(t);
+            });
+        }
         
         // Hamburger menu toggle fix
         document.addEventListener('DOMContentLoaded', function() {

@@ -55,17 +55,33 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const $submitBtn = $(this).find('#filterGoBtn');
         
-        // Show loading on filter button
         window.ButtonLoader.show($submitBtn, 'Filtering...');
         
-        // Don't update URL, just refresh the list with current form data
+        const params = $(this).serialize();
+        const newUrl = window.location.pathname + (params ? ('?' + params) : '');
+        window.history.replaceState({}, '', newUrl);
         window.refreshExpensesList();
         
-        // Hide loading after a delay (refreshExpensesList will handle the actual completion)
         setTimeout(function() {
             window.ButtonLoader.hide($submitBtn);
         }, 1000);
     });
+
+    $(document).off('click', '.quick-filter-btn').on('click', '.quick-filter-btn', function(){
+        const quick = $(this).data('quick');
+        $('#quickFilterInput').val(quick);
+        $('#fromDate').val('');
+        $('#toDate').val('');
+        $('#filterForm').trigger('submit');
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('openCreate') === '1') {
+        const $btn = $('[data-bs-target="#expenseModal"][data-url]').first();
+        if ($btn.length) {
+            $btn.trigger('click');
+        }
+    }
 });
 
 // Global initializer to setup DataTable and ajax behaviors
@@ -73,12 +89,28 @@ window.initializeExpensesPage = function(){
     // init datatable on current list
     if (window.initDataTable) {
         window.initDataTable('#expensesTable', {
+            paging: false,
+            searching: false,
+            info: false,
+            lengthChange: false,
             columnDefs: [
                 { targets: 2, className: 'text-end' },
                 { targets: 4, orderable: false, searchable: false, className: 'text-end' }
             ]
         });
     }
+
+    $(document).off('click', '.expense-page-link').on('click', '.expense-page-link', function(e){
+        e.preventDefault();
+        const page = $(this).data('page') || 1;
+        let $pageInput = $('#filterForm input[name="Page"]');
+        if ($pageInput.length === 0) {
+            $('#filterForm').append('<input type="hidden" name="Page" value="1" />');
+            $pageInput = $('#filterForm input[name="Page"]');
+        }
+        $pageInput.val(page);
+        $('#filterForm').trigger('submit');
+    });
 
     // Initialize view toggle functionality
     initializeViewToggle();
@@ -156,7 +188,9 @@ window.initializeExpensesPage = function(){
         $.ajax({
             url: url,
             type: method,
-            data: $form.serialize(),
+            data: new FormData(this),
+            processData: false,
+            contentType: false,
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         }).done(function(resp){
             // if JSON success

@@ -19,7 +19,7 @@
     </div>
     
     <div class="expense-modal-body">
-        <form method="post" asp-action="@formAction" id="expenseForm" class="expense-form">
+        <form method="post" asp-action="@formAction" id="expenseForm" class="expense-form" enctype="multipart/form-data">
             @if (isEdit)
             {
                 <input type="hidden" asp-for="ExpenseId" />
@@ -65,6 +65,15 @@
                     </label>
                     <textarea class="form-control modern-input" asp-for="Description" rows="3" placeholder="What did you spend on?"></textarea>
                     <span class="text-danger validation-message" asp-validation-for="Description"></span>
+                </div>
+                <div class="form-group form-group-full">
+                    <label class="form-label"><i class="bi bi-paperclip me-2"></i>Receipt (optional)</label>
+                    <input type="file" class="form-control modern-input" name="receipt" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" />
+                    <small class="text-muted">JPG, PNG or PDF; maximum 5 MB.</small>
+                    @if (!string.IsNullOrWhiteSpace(Model.ReceiptPath))
+                    {
+                        <div class="mt-2"><a href="@Model.ReceiptPath" target="_blank" rel="noopener">View current receipt</a></div>
+                    }
                 </div>
             </div>
             

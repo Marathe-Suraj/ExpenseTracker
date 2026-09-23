@@ -9,7 +9,7 @@ namespace ExpenseTracker.Services
 {
     public interface ICategoryService
     {
-        Task<IEnumerable<Category>> GetAllAsync(int userId);
+        Task<IEnumerable<Category>> GetAllAsync(int userId, bool activeOnly = true);
         Task<Category?> GetAsync(int userId, int id);
         Task<int> CreateAsync(Category category);
         Task<bool> UpdateAsync(Category category);
@@ -28,12 +28,14 @@ namespace ExpenseTracker.Services
             _logger = logger;
         }
 
-        public async Task<IEnumerable<Category>> GetAllAsync(int userId)
+        public async Task<IEnumerable<Category>> GetAllAsync(int userId, bool activeOnly = true)
         {
             try
             {
                 var allCategories = await _repository.GetAllForUserAsync(userId);
-                return allCategories.Where(c => c.IsActive == true);
+                if (activeOnly)
+                    return allCategories.Where(c => c.IsActive == true);
+                return allCategories;
             }
             catch (Exception ex)
             {

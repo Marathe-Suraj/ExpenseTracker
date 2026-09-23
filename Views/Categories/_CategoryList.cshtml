@@ -1,12 +1,29 @@
 @model IEnumerable<ExpenseTracker.Models.Category>
+@{
+    var hasItems = Model != null && Model.Any();
+    var categories = Model ?? Enumerable.Empty<ExpenseTracker.Models.Category>();
+}
 
+@if (!hasItems)
+{
+    <div class="empty-state text-center py-5">
+        <div class="empty-icon mb-3"><i class="bi bi-tags fs-1 text-muted"></i></div>
+        <div class="fw-semibold fs-5">No categories yet</div>
+        <div class="text-muted mb-3">Create categories to organize your expenses.</div>
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#categoryModal" data-url="@Url.Action("Create","Categories")">
+            <i class="bi bi-plus-lg me-1"></i>Add Category
+        </button>
+    </div>
+}
+else
+{
 <!-- Desktop Table View -->
 <div class="d-none d-md-block">
     <div class="categories-table-card">
         <div class="table-header">
             <div class="table-info">
                 <h6 class="table-title">Category Management</h6>
-                <p class="table-subtitle">@Model.Count() categories found</p>
+                <p class="table-subtitle">@categories.Count() categories found</p>
             </div>
         </div>
         
@@ -20,7 +37,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                @foreach (var c in Model)
+                @foreach (var c in categories)
                 {
                     <tr class="category-row">
                         <td>
@@ -84,7 +101,7 @@
 <!-- Mobile Card View -->
 <div class="d-md-none">
     <div class="mobile-category-list">
-        @foreach (var c in Model)
+        @foreach (var c in categories)
         {
             <div class="mobile-category-item">
                 <div class="mobile-category-main">
@@ -139,6 +156,4 @@
         }
     </div>
 </div>
-
-
-
+}

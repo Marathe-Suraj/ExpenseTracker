@@ -1,5 +1,17 @@
 (function(){
-	// Enhanced counter animation with better easing
+	function getCurrencySymbol(){
+		try {
+			return JSON.parse(document.getElementById('currencySymbol')?.textContent || '"₹"');
+		} catch {
+			return '₹';
+		}
+	}
+
+	function formatMoney(n){
+		const symbol = getCurrencySymbol();
+		return symbol + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+	}
+
 	function animateCounter(el){
 		const target = Number((el.getAttribute('data-target')||'').replace(/,/g,'')) || 0;
 		const duration = 1200;
@@ -13,14 +25,12 @@
 		
 		function frame(now){
 			const p = Math.min(1, (now - start) / duration);
-			// Enhanced easing function for smoother animation
 			const eased = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
 			const val = target * eased;
 			el.textContent = prefix ? (prefix + formatNumber(val)) : (formatNumber(val) + (suffix ? (' ' + suffix) : ''));
 			if(p < 1) requestAnimationFrame(frame);
 		}
 		
-		// Add a slight delay for staggered animation effect
 		const delay = parseInt(el.closest('[data-delay]')?.getAttribute('data-delay')) || 0;
 		setTimeout(() => requestAnimationFrame(frame), delay);
 	}
@@ -30,35 +40,23 @@
 		const emptyEl = document.getElementById(canvasId + 'Empty');
 		if(!el || typeof Chart === 'undefined') return;
 		
-		// Check if there's any data
 		const hasData = values && values.length > 0 && values.some(v => v > 0);
 		
 		if (!hasData) {
-			// Hide canvas and show empty message
 			el.style.display = 'none';
-			if (emptyEl) {
-				emptyEl.classList.remove('d-none');
-			}
+			if (emptyEl) emptyEl.classList.remove('d-none');
 			return;
 		}
 		
-		// Show canvas and hide empty message
 		el.style.display = 'block';
-		if (emptyEl) {
-			emptyEl.classList.add('d-none');
-		}
+		if (emptyEl) emptyEl.classList.add('d-none');
 		
-		// Modern gradient colors inspired by Notion
 		const gradientColors = [
 			'#667eea', '#764ba2', '#f093fb', '#f5576c',
 			'#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
 			'#ffecd2', '#fcb69f', '#a8edea', '#fed6e3'
 		];
 		const colors = values.map((_,i) => gradientColors[i % gradientColors.length]);
-		
-		// Get chart context for gradients
-		const ctx = el.getContext('2d');
-		const chartArea = el.getBoundingClientRect();
 		
 		new Chart(el, {
 			type: 'doughnut',
@@ -83,10 +81,7 @@
 							padding: 20,
 							usePointStyle: true,
 							pointStyle: 'circle',
-							font: {
-								size: 12,
-								weight: '500'
-							}
+							font: { size: 12, weight: '500' }
 						}
 					},
 					tooltip: {
@@ -100,8 +95,8 @@
 						callbacks: {
 							label: function(context) {
 								const total = context.dataset.data.reduce((a, b) => a + b, 0);
-								const percentage = ((context.parsed / total) * 100).toFixed(1);
-								return `${context.label}: $${context.parsed.toFixed(2)} (${percentage}%)`;
+								const percentage = total ? ((context.parsed / total) * 100).toFixed(1) : '0.0';
+								return `${context.label}: ${formatMoney(context.parsed)} (${percentage}%)`;
 							}
 						}
 					}
@@ -116,6 +111,59 @@
 				interaction: {
 					intersect: false,
 					mode: 'index'
+				}
+			}
+		});
+	}
+
+	function makeTrendChart(labels, values){
+		const el = document.getElementById('dailyTrendChart');
+		const emptyEl = document.getElementById('dailyTrendChartEmpty');
+		if(!el || typeof Chart === 'undefined') return;
+
+		const hasData = values && values.length > 0 && values.some(v => v > 0);
+		if (!hasData) {
+			el.style.display = 'none';
+			if (emptyEl) emptyEl.classList.remove('d-none');
+			return;
+		}
+
+		el.style.display = 'block';
+		if (emptyEl) emptyEl.classList.add('d-none');
+
+		new Chart(el, {
+			type: 'line',
+			data: {
+				labels,
+				datasets: [{
+					label: 'Daily total',
+					data: values,
+					borderColor: '#667eea',
+					backgroundColor: 'rgba(102, 126, 234, 0.15)',
+					fill: true,
+					tension: 0.35,
+					pointRadius: 3,
+					pointHoverRadius: 5
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: { display: false },
+					tooltip: {
+						callbacks: {
+							label: (ctx) => formatMoney(ctx.parsed.y)
+						}
+					}
+				},
+				scales: {
+					y: {
+						beginAtZero: true,
+						ticks: {
+							callback: (v) => formatMoney(v)
+						}
+					}
 				}
 			}
 		});
@@ -138,11 +186,12 @@
 		const monthlyVals = JSON.parse(document.getElementById('monthlyValues')?.textContent||'[]');
 		const yearly = JSON.parse(document.getElementById('yearlyLabels')?.textContent||'[]');
 		const yearlyVals = JSON.parse(document.getElementById('yearlyValues')?.textContent||'[]');
+		const trendLabels = JSON.parse(document.getElementById('trendLabels')?.textContent||'[]');
+		const trendValues = JSON.parse(document.getElementById('trendValues')?.textContent||'[]');
 		makePieChart('pieDaily', daily, dailyVals);
 		makePieChart('pieMonthly', monthly, monthlyVals);
 		makePieChart('pieYearly', yearly, yearlyVals);
+		makeTrendChart(trendLabels, trendValues);
 		wireModal();
 	});
 })();
-
-

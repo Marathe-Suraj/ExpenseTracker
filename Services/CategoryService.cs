@@ -10,6 +10,7 @@ namespace ExpenseTracker.Services
     public interface ICategoryService
     {
         Task<IEnumerable<Category>> GetAllAsync(int userId);
+        Task<IEnumerable<Category>> GetAllIncludingInactiveAsync(int userId);
         Task<Category?> GetAsync(int userId, int id);
         Task<int> CreateAsync(Category category);
         Task<bool> UpdateAsync(Category category);
@@ -38,6 +39,19 @@ namespace ExpenseTracker.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get categories for user {UserId}", userId);
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<Category>> GetAllIncludingInactiveAsync(int userId)
+        {
+            try
+            {
+                return await _repository.GetAllForUserAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get all categories for user {UserId}", userId);
                 throw;
             }
         }

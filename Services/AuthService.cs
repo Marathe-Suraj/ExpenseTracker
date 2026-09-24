@@ -1,7 +1,6 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using BCrypt.Net;
 using ExpenseTracker.Data.Repositories;
 using ExpenseTracker.Models;
 using Microsoft.AspNetCore.Authentication;
@@ -15,8 +14,10 @@ namespace ExpenseTracker.Services
     {
         Task<(bool Success, string? Error)> RegisterAsync(string username, string password);
         Task<(bool Success, string? Error)> LoginAsync(string username, string password, bool rememberMe = false);
+        Task<(bool Success, User? User, string? Error)> ValidateCredentialsAsync(string username, string password);
         Task LogoutAsync();
         int? GetCurrentUserId();
+        string? GetCurrentUsername();
     }
 
     public class AuthService : IAuthService
@@ -59,16 +60,31 @@ namespace ExpenseTracker.Services
             }
         }
 
-        public async Task<(bool Success, string? Error)> LoginAsync(string username, string password, bool rememberMe = false)
+        public async Task<(bool Success, User? User, string? Error)> ValidateCredentialsAsync(string username, string password)
         {
             try
             {
                 var user = await _userRepository.GetByUsernameAsync(username);
-                if (user == null) return (false, "Invalid username or password.");
+                if (user == null) return (false, null, "Invalid username or password.");
                 if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
                 {
-                    return (false, "Invalid username or password.");
+                    return (false, null, "Invalid username or password.");
                 }
+                return (true, user, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Credential validation failed for {Username}", username);
+                return (false, null, "An unexpected error occurred.");
+            }
+        }
+
+        public async Task<(bool Success, string? Error)> LoginAsync(string username, string password, bool rememberMe = false)
+        {
+            try
+            {
+                var (success, user, error) = await ValidateCredentialsAsync(username, password);
+                if (!success || user == null) return (false, error);
 
                 var claims = new[]
                 {
@@ -118,7 +134,16 @@ namespace ExpenseTracker.Services
             }
             return null;
         }
+
+        public string? GetCurrentUsername()
+        {
+            var http = _httpContextAccessor.HttpContext;
+            if (http?.User?.Identity?.IsAuthenticated == true)
+            {
+                return http.User.Identity?.Name
+                    ?? http.User.FindFirst(ClaimTypes.Name)?.Value;
+            }
+            return null;
+        }
     }
 }
-
-

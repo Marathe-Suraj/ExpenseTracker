@@ -121,5 +121,34 @@ namespace ExpenseTracker.Controllers.Api
 
             return Ok(new { success = true });
         }
+        [HttpGet("export/excel")]
+        public async Task<IActionResult> ExportExcel([FromQuery] ExpenseFilterViewModel filter)
+        {
+            var userId = _authService.GetCurrentUserId();
+            if (!userId.HasValue)
+                return Unauthorized(new ApiError { Error = "Unauthorized." });
+
+            filter.Page = 1;
+            filter.PageSize = int.MaxValue;
+            var data = await _expenseService.SearchAsync(userId.Value, filter);
+            var bytes = _expenseService.ExportToExcel(data.Items);
+            var filename = $"ExpensesReport_{DateTime.Now:ddMMyyyyHHmmss}.xlsx";
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename);
+        }
+
+        [HttpGet("export/pdf")]
+        public async Task<IActionResult> ExportPdf([FromQuery] ExpenseFilterViewModel filter)
+        {
+            var userId = _authService.GetCurrentUserId();
+            if (!userId.HasValue)
+                return Unauthorized(new ApiError { Error = "Unauthorized." });
+
+            filter.Page = 1;
+            filter.PageSize = int.MaxValue;
+            var data = await _expenseService.SearchAsync(userId.Value, filter);
+            var bytes = _expenseService.ExportToPdf(data.Items);
+            var filename = $"ExpensesReport_{DateTime.Now:ddMMyyyyHHmmss}.pdf";
+            return File(bytes, "application/pdf", filename);
+        }
     }
 }

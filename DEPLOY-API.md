@@ -49,6 +49,20 @@ Authorization: Bearer YOUR_TOKEN
 
 Expected: `200` with dashboard totals JSON.
 
+### Expense export (Excel / PDF)
+
+```http
+GET https://trackexpense.runasp.net/api/expenses/export/excel
+Authorization: Bearer YOUR_TOKEN
+```
+
+```http
+GET https://trackexpense.runasp.net/api/expenses/export/pdf
+Authorization: Bearer YOUR_TOKEN
+```
+
+Expected: file download (`200`).
+
 ### Web UI check
 
 Open `https://trackexpense.runasp.net/` and confirm login with cookies still works.
